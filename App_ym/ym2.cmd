@@ -1,0 +1,1 @@
+start sapshcut.exe -type=Transaction -command=se38 -language=S -maxgui -sysname="2.- Osss PRD [Remoto]" -system= -client=110 -user=osssadmin -pw=idesofv2
