@@ -2,53 +2,53 @@
 class zcldev{
 
   ;Key spanish replace
-	keyspanish(in,out){
-		this.winA()
-		
+ keyspanish(in,out){
+  this.winA()
+  
     ;Validar lenguaje de teclado spanish
     ;Validar lenguaje de windows
-		IF A_langu_es<>
-		{
-			If A_class in wndclass_desked_gsk,borrarentrada ;Excepcion Editor de macro excel
-				Send ^{%in%}
-			Else If A_exe in winword.exe,excel.exe,mspaint.exe,notepad.exe,explorer.exe,outlook.exe ;,OneNote
-				Send ^{%out%}
-			Else 
-				Send ^{%in%}
-		}
-		Else
+  IF A_langu_es<>
+  {
+   If A_class in wndclass_desked_gsk,borrarentrada ;Excepcion Editor de macro excel
+    Send ^{%in%}
+   Else If A_exe in winword.exe,excel.exe,mspaint.exe,notepad.exe,explorer.exe,outlook.exe ;,OneNote
+    Send ^{%out%}
+   Else 
+    Send ^{%in%}
+  }
+  Else
       Send ^{%in%}
-	}
+ }
 
   ;Read ini from script
   iniread_script(i_script,i_section,i_key){
     ;Script
-		l_scriptini := this.scriptini(i_script)
-		
+  l_scriptini := this.scriptini(i_script)
+  
     ;Clear key
-		l_key := this.keyname(i_key)
-		
+  l_key := this.keyname(i_key)
+  
     ;ReadFile Ini
-		IniRead r_value, %l_scriptini%, %i_section%, %l_key%
-		If (r_value="ERROR" or r_value="")
-		{
-			Msgbox Debug: %l_scriptini%, %i_section%, %l_key%, %r_value%
-			r_value=
-		}
-		return r_value
-	}
-	
+  IniRead r_value, %l_scriptini%, %i_section%, %l_key%
+  If (r_value="ERROR" or r_value="")
+  {
+   Msgbox Debug: %l_scriptini%, %i_section%, %l_key%, %r_value%
+   r_value=
+  }
+  return r_value
+ }
+ 
   ;Write ini of script
   iniwrite_script(i_script,i_section,i_key,i_value){
     ;Script
-		l_scriptini := this.scriptini(i_script)
-		
+  l_scriptini := this.scriptini(i_script)
+  
     ;Clear key
-		l_key := this.keyname(i_key)
-		
+  l_key := this.keyname(i_key)
+  
     ;WriteFile Ini
-		IniWrite %i_value%, %l_scriptini%, %i_section%, %l_key%
-	}
+  IniWrite %i_value%, %l_scriptini%, %i_section%, %l_key%
+ }
 
   job_hotcorner(){
     CoordMode Mouse, Screen

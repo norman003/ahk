@@ -1,0 +1,5 @@
+lt := []
+lt_tab = % %it_tab%
+    
+for index,ls_tab in lt_tab
+  if WinActive(ls_tab)

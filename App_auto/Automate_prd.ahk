@@ -20,7 +20,8 @@ Global up,dn,
 Global on,off,debug,all,noexit
 
 ;Window
-Global A_class, A_title, A_exe, A_id, A_control, A_Color, A_x, A_y, A_alto, A_ancho, A_key, A_keyname
+Global A_class, A_title, A_exe, A_id, A_control, A_Color, A_x, A_y, A_alto, A_ancho, A_key, A_keyname, 
+Global A_lastclass, A_lasttitle, A_lastexe, A_lastid
 Global A_Abapext
 
 ;Global
@@ -37,7 +38,7 @@ class zclbase extends zclwin{
   ;----------------------------------------------------------------------;
   ; Inicializa
   ;----------------------------------------------------------------------;
-	__New(){
+  __New(){
     ;Caracteristicas
     SendMode Input              ;Recommended for new scripts due to its superior speed and reliability
     SetWorkingDir %A_ScriptDir% ;Ensures a consistent starting directory
@@ -54,34 +55,33 @@ class zclbase extends zclwin{
 
     ;Global
     A_scriptini := this.scriptini(A_scriptname)
-		EnvGet A_onedrive, OneDrive
-		FormatTime A_day,,ddMMyy
-		FormatTime A_month_ini,,01MMyy
-		FormatTime A_month_fin,,30MMyy
+    EnvGet A_onedrive, OneDrive
+    FormatTime A_day,,ddMMyy
+    FormatTime A_month_ini,,01MMyy
+    FormatTime A_month_fin,,30MMyy
     IF A_Language in 040A,080A,0C0A,100A,140A,180A,1C0A,200A,240A,280A,2C0A,300A,340A,380A,3C0A,400A,440A,480A,4C0A,500A,540A
       A_langu_es := "X"
     Else
       A_langu_es := ""
-    
-	}
+  }
 
   ;----------------------------------------------------------------------;
   ; Files .Ini
   ;----------------------------------------------------------------------;
   ;Read ini
-	iniread(i_ini,i_section,i_key){
+  iniread(i_ini,i_section,i_key){
     ;Clear key
-		;l_key := this.keyname(i_key)
-		
+    ;l_key := this.keyname(i_key)
+    
     ;ReadFile Ini
-		IniRead r_value, %i_ini%, %i_section%, %i_key%
-		If r_value="ERROR" or r_value=""
-		{
-			Msgbox Debug: %i_ini%, %i_section%, %l_key%, %r_value%
-			r_value=
-		}
-		return r_value
-	}
+    IniRead r_value, %i_ini%, %i_section%, %i_key%
+    If r_value="ERROR" or r_value=""
+    {
+      Msgbox Debug: %i_ini%, %i_section%, %l_key%, %r_value%
+      r_value=
+    }
+    return r_value
+  }
 
   ;----------------------------------------------------------------------;
   ; Validaciones
@@ -136,36 +136,37 @@ class zclbase extends zclwin{
   ; Key
   ;----------------------------------------------------------------------;
   ;Key without $
-	keyclear(i_key=""){
+  keyclear(i_key=""){
     If i_key=
       i_key := A_thishotkey
-		r_key := i_key
-		r_key := StrReplace(r_key, "::", "")    ;Hotstring
-		r_key := StrReplace(r_key, ":*:", "")   ;Hotstring
-		r_key := StrReplace(r_key, ":*b0:", "") ;Hotstring
-		r_key := StrReplace(r_key, "$", "")     ;$
-		return r_key
-	}
+    r_key := i_key
+    r_key := StrReplace(r_key, "::", "")    ;Hotstring
+    r_key := StrReplace(r_key, ":*:", "")   ;Hotstring
+    r_key := StrReplace(r_key, ":*b0:", "") ;Hotstring
+    r_key := StrReplace(r_key, "$", "")     ;$
+    return r_key
+  }
   
   ;Key Name
-	keyname(i_key=""){
+  keyname(i_key=""){
     r_key := this.keyclear(i_key)
-		r_key := StrReplace(r_key, "#", "win")  ;Win
-		r_key := StrReplace(r_key, "^", "ctrl") ;Ctrl
-		r_key := StrReplace(r_key, "+", "shift") ;Shift
-		r_key := StrReplace(r_key, "!", "alt")  ;Alt
-		return r_key
-	}
-	
+    r_key := StrReplace(r_key, "#", "win")  ;Win
+    r_key := StrReplace(r_key, "^", "ctrl") ;Ctrl
+    r_key := StrReplace(r_key, "+", "shift") ;Shift
+    r_key := StrReplace(r_key, "!", "alt")  ;Alt
+    return r_key
+  }
+ 
   ;----------------------------------------------------------------------;
   ; Run = link, file, windows, hotkey
   ;----------------------------------------------------------------------;
-	;Run
+  ;Run
   run(i_app,i_noesc=""){
     If this.IsWheel()
       Exit
 
-		this.app_closelaunch()
+    this.app_closelaunch()
+    this.winlast()
 
     ;0. Inicializa
     l_app := this.varget(i_app)
@@ -220,11 +221,25 @@ class zclbase extends zclwin{
 
     ;5. Run
     Else
+    {
+      ;Crear folder
+      If l_app contains :\,
+      {
+        IfNotExist %l_app%
+        {
+          Msgbox 4,,Desea crear %l_app%?
+          Ifmsgbox yes
+            FileCreateDir %l_app%
+          Sleep 100
+        }
+      }
+
       Run %l_app%
+    }
 
     If this.ishs()
       Exit
-	}
+  }
 
   ;Run from file
   run_file(i_file=""){
@@ -234,7 +249,7 @@ class zclbase extends zclwin{
     this.run(i_file)
     exitapp
   }
-	
+ 
   ;Run cmd
   run_cmd(i_file){
     Run %comspec% /k %i_file%,,hide
@@ -252,42 +267,42 @@ class zclbase extends zclwin{
   }
 
   ;Ini of SCRIPT
-	scriptini(i_script){
-		r_ini := i_script
-		if r_ini =
-			r_ini := A_ScriptName
-		r_ini := StrReplace(r_ini, "ahk", "ini")
-		r_ini := StrReplace(r_ini, "exe", "ini")
-		return r_ini
-	}
+  scriptini(i_script){
+    r_ini := i_script
+    if r_ini =
+      r_ini := A_ScriptName
+    r_ini := StrReplace(r_ini, "ahk", "ini")
+    r_ini := StrReplace(r_ini, "exe", "ini")
+    return r_ini
+  }
 
   ;----------------------------------------------------------------------;
   ; Envio de texto
   ;----------------------------------------------------------------------;
   ;Send RAW
-	sendraw(val){
+  sendraw(val){
     val := this.varget(val)
-		sendraw %val%
+    sendraw %val%
 
     If this.ishs()
       Exit
-	}
-	
+  }
+ 
   ;Send CLIPBOARD
-	sendcopy(i_val,i_noexit=""){
-		l_cliptemp := ClipboardAll
-		clipboard  := this.varget(i_val)
-		Send ^v
-		Sleep 500
-		clipboard  := l_cliptemp
-		l_cliptemp  =
+  sendcopy(i_val,i_noexit="",i_debug=""){
+    l_cliptemp := ClipboardAll
+    clipboard  := this.varget(i_val,i_debug)
+    Send ^v
+    Sleep 500
+    clipboard  := l_cliptemp
+    l_cliptemp  =
 
     IF i_noexit=
     {
       If this.ishs()
         Exit
     }
-	}
+  }
 
   ;Send KEYWORD
   sendk(i_word){
@@ -300,7 +315,7 @@ class zclbase extends zclwin{
   ;----------------------------------------------------------------------;
   ;Timestamp
   timestamp(i_fin=""){
-    if i_fin=
+    If i_fin=
       g_inistamp := A_TickCount
     Else
     {
@@ -350,10 +365,10 @@ class zclbase extends zclwin{
 
       ;Obtener extension de aplicación
       l_extension := lt_line[2]
-      If l_extension contains doc,odt
-        l_title := l_file " - Word"
-      Else If l_extension contains xls,csv
-        l_title := l_file " - Excel"
+
+      ;Obtener titulo
+      If l_extension<>
+        l_title := l_app
       Else If l_extension in code-workspace,
         l_title := l_file " (Workspace)"
     }
@@ -406,8 +421,15 @@ class zclbase extends zclwin{
   winA(){
     WinGetClass A_class, A
     WinGetTitle A_title, A
-		WinGet A_exe, Processname, A
+    WinGet A_exe, Processname, A
     Winget A_id, ID, A
+  }
+
+  winlast(){
+    WinGetClass A_lastclass, A
+    WinGetTitle A_lasttitle, A
+    WinGet A_lastexe, Processname, A
+    Winget A_lastid, ID, A
   }
   
   ;Data of WINDOW mouse
@@ -445,12 +467,12 @@ class zclbase extends zclwin{
   }
 
   ;Data of CONTROL mouse
-	wincontrol(){
-		;A_id := WinExist("A")
-    Winget A_id, ID, A
-		ControlGetFocus r_control, ahk_id %A_id%
-		Return r_control
-	}
+  wincontrol(){
+    ;A_id := WinExist("A")
+      Winget A_id, ID, A
+    ControlGetFocus r_control, ahk_id %A_id%
+    Return r_control
+  }
 
   ;----------------------------------------------------------------------;
   ; Winsel
@@ -498,11 +520,11 @@ class zclbase extends zclwin{
 
   ;GUI WINDOW list
   winsel_100(){
-    lt_win := this.winlist("OpusApp") ;Word
-    lt_win := lt_win this.winlist("XLMAIN")  ;Excel
-    lt_win := lt_win this.winlist("Notepad++")  ;Notepad++
-    lt_win := lt_win this.winlist("SAP_FRONTEND_SESSION")  ;Saplogon
-    lt_win := lt_win this.winlist("QWidget")  ;Saplogon
+    lt_win := this.winlist("OpusApp")                       ;Word
+    lt_win := lt_win this.winlist("XLMAIN")                 ;Excel
+    lt_win := lt_win this.winlist("QWidget")                ;Wps
+    lt_win := lt_win this.winlist("rctrl_renwnd32")         ;Outlook
+    lt_win := lt_win this.winlist("Framework::CFrame")      ;Onenote
 
     Gui Add, ListBox, w400 h100 g100_listbox v100_wintitle, %lt_win%
     Gui Add, Button, x0 y0 Default Hidden g100_ok
@@ -522,6 +544,7 @@ class zclbase extends zclwin{
       Gui Submit, NoHide
       Winactivate %100_wintitle%
       IniWrite %100_wintitle%, %A_scriptini%, %100_section%, %100_key%
+      ;msgbox %100_section%
       Goto GuiClose
     Return
 
@@ -549,26 +572,46 @@ class zclbase extends zclwin{
 class zclsap extends zclbase{
   ;Activar abap
   abap_activate(i_all=""){
-    Send ^{f3}
-    WinWaitactive Objetos inactivos de,,3 ;Inactivos
-    If errorlevel = 0
+
+    ;SQ02
+    Ifwinactive InfoSet
     {
-      If i_all<>
-        Send {f9}
-      Sleep 300
+      Send +{F6}
+      WinWaitActive modificado,,2
+      If errorlevel=0
+        Send {enter}
+      WinWaitActive Información,,5
+      Send {enter}
+      WinWaitActive Visualizar log,,5
       Send {enter}
     }
-    WinWaitactive ctiva,,3                ;Error al activar
-    If errorlevel = 0
-      Send {enter}
-    If this.ishs()
-      Exit
+    Else
+    {
+      Send ^{f3}
+      WinWaitactive Objetos inactivos de,,3 ;Inactivos
+      If errorlevel = 0
+      {
+        If i_all<>
+          Send {f9}
+        Sleep 300
+        Send {enter}
+      }
+      WinWaitactive ctiva,,3                ;Error al activar
+      If errorlevel = 0
+        Send {enter}
+      If this.ishs()
+        Exit
+    }
   }
 
   ;Commentar linea
   abap_commentline(i_label,i_ini,i_ticket){
+    this.WinA()
+
     ;Sleep 500
+    l_letter = "
     l_key := this.keyclear(i_label)
+    l_key := StrReplace(l_key, l_letter, "")
     StringUpper l_key,l_key
 
     marca = %l_key%-%A_day%-%i_ini%-%i_ticket%
@@ -577,11 +620,20 @@ class zclsap extends zclbase{
     If SubStr(i_ticket, 1, 1) = 1
       marca = %l_key%-%A_day%-%i_ini%
 
-    this.sendcopy(marca,on)
+    If A_title contains .js,.ps
+      l_letter := "//"
+    Else
+      l_letter = "
+
+    marca = %l_letter%%marca%
+
+    this.sendcopy(marca)
   }
 
   ;Comentar bloque
   abap_commentblock(i_label,i_ini,i_ticket){
+    this.WinA()
+
     ;Sleep 500
     l_key := this.keyclear(i_label)
     l_key := StrReplace(l_key, "*", "")
@@ -593,12 +645,25 @@ class zclsap extends zclbase{
     If SubStr(i_ticket, 1, 1) = 1
       l_line = %l_key%-%A_day%-%i_ini%
       
-    marca =
+    If A_title contains .js,.ps
+    {
+      l_letter := "//"
+      marca =
+      (
+      %l_letter%{%l_line%
+%l_letter%}%l_line%
+      )
+    }
+    Else
+    {
+      l_letter := "*"
+      marca =
     (
-*{%l_line%
-*}%l_line%
+%l_letter%{%l_line%
+%l_letter%}%l_line%
     )
-    this.sendcopy(marca,on)
+    }
+    this.sendcopy(marca)
   }
 
   ;Logon Sap
@@ -624,7 +689,7 @@ class zclsap extends zclbase{
     ;----------------------------------------------------------;
     ;Escenario 1
     ;----------------------------------------------------------;
-    If l_ambiente not in dev,qas,prd,snd,def,qaf,prf
+    If l_ambiente not contains de,qa,pr,sn,ha
     {
       ;1. Obtener ID de empresa, ambiente
       id_empresa  := substr(ls_id[1], 1, 2)   ;DA
@@ -639,30 +704,30 @@ class zclsap extends zclbase{
       Loop read, %l_dir_ym%,
       {
         ls_line := StrSplit(A_LoopReadLine, A_tab)
-        If ls_line[9] = id_empresa
+        If ls_line[11] = id_empresa
           Break
       }
       l_empresa := ls_line[1]
       If id_ambiente in 1
       {
         conexion_name = %l_empresa% dev
-        mandt   := ls_line[11]
-        user    := ls_line[3]
-        pass    := ls_line[4]
+        mandt   := ls_line[13]
+        user    := ls_line[5]
+        pass    := ls_line[6]
       }
       If id_ambiente in 2
       {
         conexion_name = %l_empresa% qas
-        mandt   := ls_line[12]
-        user    := ls_line[5]
-        pass    := ls_line[6]
+        mandt   := ls_line[14]
+        user    := ls_line[7]
+        pass    := ls_line[8]
       }
       If id_ambiente in 3
       {
         conexion_name = %l_empresa% prd
-        mandt   := ls_line[13]
-        user    := ls_line[7]
-        pass    := ls_line[8]
+        mandt   := ls_line[15]
+        user    := ls_line[9]
+        pass    := ls_line[10]
       }
     }
     ;----------------------------------------------------------;
@@ -688,7 +753,7 @@ class zclsap extends zclbase{
       {
         tcode := mandt    ;tcode
       
-      ;3. Obtener mandt-user-pass
+        ;3. Obtener mandt-user-pass
         Loop read, %l_dir_ym%,
         {
           ls_line := StrSplit(A_LoopReadLine, A_tab)
@@ -697,21 +762,21 @@ class zclsap extends zclbase{
         }
         If ambiente in dev
         {
-          mandt   := ls_line[11]
-          user    := ls_line[3]
-          pass    := ls_line[4]
-        }
-        If ambiente in qas
-        {
-          mandt   := ls_line[12]
+          mandt   := ls_line[13]
           user    := ls_line[5]
           pass    := ls_line[6]
         }
-        If ambiente in prd
+        If ambiente in qas
         {
-          mandt   := ls_line[13]
+          mandt   := ls_line[14]
           user    := ls_line[7]
           pass    := ls_line[8]
+        }
+        If ambiente in prd
+        {
+          mandt   := ls_line[15]
+          user    := ls_line[9]
+          pass    := ls_line[10]
         }
       }
     }
@@ -725,7 +790,30 @@ class zclsap extends zclbase{
     ;msgbox debug: %nom_emp%-%ambiente%-%mandt%-%user%-%pass%-%tcode%-%langu%
     ;Llamada
     IF conexion_name<>
-      Run %comspec% /c start sapshcut.exe -type=Transaction -command=%tcode% -language=%langu% -maxgui -sysname="%conexion_name%" -system= -client=%mandt% -user=%user% -pw=%pass% -reuse=1,,hide
+      Run %comspec% /c start sapshcut.exe -type=Transaction -command=%tcode% -language=%langu% -maxgui -sysname="%conexion_name%" -system= -client=%mandt% -user=%user% -pw="%pass%" -reuse=1,,hide
+
+    ;Ventana de varias sesion
+    WinWait Info de licencia,,5
+    If errorlevel = 0
+    {
+      WinActivate Info de licencia
+      WinWaitActive Info de licencia
+      Send ^{i}
+      Sleep 100
+      Send {tab}{up}
+      Sleep 300
+
+      ;Dev
+      If id_ambiente = 1
+      {
+        If id_empresa not contains cm,au
+          Send {enter}
+      }
+
+      ;Qas
+      If id_ambiente = 2
+        Send {enter}
+    }
 
     If this.ishs()
       Exit
@@ -741,11 +829,12 @@ class zclsap extends zclbase{
   qasopen(){
     this.tcode("se37",noexit)
     winwaitactive Biblioteca de funciones: Acceso,,5
-    if errorlevel = 0
+    If errorlevel = 0
     {
       this.sendcopy("TRINT_OBJECTS_CHECK_AND_INSERT",noexit)
       Send {F7}
-      WinWaitActive TRINT_OBJECTS_CHECK_AND_INSERT,,3
+      WinWaitActive TRINT_OBJECTS_CHECK_AND_INSERT,,5
+      Sleep 500
       Send ^o
       WinWait Pasar a
       Winactivate A
@@ -759,12 +848,9 @@ class zclsap extends zclbase{
   
   ;Qas var
   qasopen_var(){
-    this.sendcopy("ls_memo-category")
-    Send {down}
-    this.sendcopy("ls_memo-cli_dep")
-    Send {down}
-    this.sendcopy("ls_memo-check_result")
-    Send {down}{enter}
+    FileRead lt_qas, qasvar.txt
+    this.sendcopy(lt_qas)
+    Send {enter}
   }
 
   ;Qas val
@@ -777,7 +863,7 @@ class zclsap extends zclbase{
   ;Se38
   se38(i_program,i_ucomm="f8"){
     Winactivate ahk_class SAP_FRONTEND_SESSION
-    this.tcode("se38","")
+    this.tcode("se38")
     
     WinWaitactive Editor ABAP: Imagen inicial
     this.sendcopy(i_program)
@@ -807,7 +893,6 @@ class zclsap extends zclbase{
       this.se38_file("f6")
     Exitapp
   }
-
 
   ;Se38 POOL
   se38pool(i_file,i_filename){
@@ -885,7 +970,37 @@ class zclsap extends zclbase{
     }
   }
 
-  ;Tcode complete file
+  ;Tcode with view
+  tcodeopen(i_tcode){
+    this.tcode(i_tcode,on)
+    Sleep 2000
+
+    ;Dev
+    this.winA()
+    If A_title contains /1,/20
+    {
+      Sleep 1000
+      Send {F6}
+    }
+    Else
+    {
+      Sleep 1000
+      Send {F7}
+      Sleep 500
+      ;Send ^{f}
+    }
+  }
+
+  ;Tcode with button
+  tcodebutton(i_tcode,i_title,i_button){
+    this.tcode(i_tcode,on)
+    Sleep 1000
+    WinWaitActive %i_title%,,5
+    If errorlevel=0
+      this.tcode(i_button,on)
+  }
+
+  ;Tcode file
   tcode_file(){
     inicializa()
     l_name := this.scriptname()
@@ -893,16 +1008,34 @@ class zclsap extends zclbase{
     ExitApp
   }
 
+  ;Tcode file with button
+  tcodebutton_file(i_button){
+    inicializa()
+    l_name := this.scriptname()
+    this.tcodebutton(l_name,l_name,i_button)
+    ExitApp
+  }
+
   ;Tcodebar
   tcodebar(){
     IF A_langu_es<>
       Send ^+{7}
-    else
+    Else
       Send ^/
-    
-    Send /n
   }
 
+  ;Tratar objeto
+  tratarobjeto(){
+    Winwait Buscar variante,,4
+    If errorlevel=0
+      Send {f8}
+  }
+
+  sendticket(in){
+    Ifwinactive YMT
+      Send {home}
+    this.sendcopy(in)
+  }
 }
 
 ;**********************************************************************
@@ -995,9 +1128,9 @@ class zclwin{
   ; App
   ;----------------------------------------------------------------------;
   ;App close
-	app_close(){
-		this.winA()
-    
+  app_close(){
+    this.winA()
+      
     ;0. StrokesPlus
     Sleep 1
 
@@ -1006,17 +1139,17 @@ class zclwin{
       WinKill A
 
     ;2. Esc
-		Else If this.Iswinactivearray("gt2_esc")
-			Send {esc}
+    Else If this.Iswinactivearray("gt2_esc")
+    Send {esc}
 
     ;3. ^W
     Else If this.Iswinactivearray("gt3_ctrlw")
       Send ^{w}
 
     ;4. Saplogon
-		Else if A_exe=saplogon.exe
-		{
-			Ifwinactive Función debugging controla sesión
+    Else if A_exe=saplogon.exe
+    {
+      Ifwinactive Función debugging controla sesión
       {
         Send +{F3}
         winwait Detener func.debugg.,,3
@@ -1025,12 +1158,12 @@ class zclwin{
       }
       Else
         WinKill A
-		}
+    }
 
     ;5. Close
-		Else
-			Send !{f4}
-	}
+    Else
+      Send !{f4}
+  }
 
   ;App close process
   app_closeprocess(){
@@ -1091,16 +1224,16 @@ class zclwin{
   }
 
   ;App close launch
-	app_closelaunch(){
+  app_closelaunch(){
     IfWinActive ahk_exe Listary.exe
       Send {esc}
-  	IfWinActive ahk_exe SearchUI.exe
-			Winclose
-		IfWinActive ahk_exe Everything.exe
-			Send !{esc}
-    IfWinActive ahk_exe switcheroo.exe
-      Send {esc}
-	}
+    IfWinActive ahk_exe SearchUI.exe
+    Winclose
+    IfWinActive ahk_exe Everything.exe
+    Send !{esc}
+      IfWinActive ahk_exe switcheroo.exe
+        Send {esc}
+  }
 
   ;App Esc
   app_esc(i_opcion=""){
@@ -1112,7 +1245,7 @@ class zclwin{
     Else
     {
       If this.Iswinactivearray("gt2_esc")
-			  Send {esc}
+        Send {esc}
       Else
       {
         Send !{esc}
@@ -1124,54 +1257,87 @@ class zclwin{
   ;----------------------------------------------------------------------;
   ; Excel
   ;----------------------------------------------------------------------;
-	;Excel keyr
-  excel_keyr(i_file){
-    Ifwinactive OST
-      l_keyr=on
+  ;Excel keyr
+  excel_sendctrlr(i_file){
     Ifwinactive ahk_exe OUTLOOK.EXE
     {
       Send !{2}
-      Sleep 1000
-      l_keyr=on
+      ClipWait
+      l_sendctrlr=on
+      Winactivate OST
     }
-    this.run(i_file,on)
-    If l_keyr=on
+    IfWinactive OST -
+      l_sendctrlr=on
+    Else
+      this.run(i_file,on)
+    If l_sendctrlr=on
     {
-      Sleep 200
       Send ^{r}
       WinWaitActive Registro
       MouseMove 200, 100
     }
-		Exit
-	}
+    Exit
+  }
+
+  ;----------------------------------------------------------------------;
+  ; Everything
+  ;----------------------------------------------------------------------;
+  everything_copycontent(){
+    FileEncoding UTF-8
+
+    ;0 Obtener files
+    Send ^+{c}
+    ClipWait 1
+    Send !{esc}
+
+    ;1 Activar editor
+    ;Winactivate %A_lasttitle%
+    ;WinWaitActive %A_lasttitle%
+    Sleep 50
+
+    ;2 Pegar
+    lt_file := clipboard
+    
+    Loop parse, lt_file,`n, `r
+    { 
+      If A_LoopField contains txt,
+      {
+        FileRead lt_clip, %A_LoopField%
+        ClipWait 1
+        ;Send ^{v}{enter}
+      }
+    }
+
+    clipboard := lt_clip
+  }
 
   ;----------------------------------------------------------------------;
   ; Outlook
   ;----------------------------------------------------------------------;
-	;Outlook set category
+  ;Outlook set category
   outlook_category(i_title,i_tag,i_appcategory){
-		this.outlook_categoryset(i_appcategory)
-		WinWaitactive %i_title%,,0.5
-		If errorlevel = 0
-			Send ^{backspace 2}%i_tag%{enter}
-	}
+    this.outlook_categoryset(i_appcategory)
+    WinWaitactive %i_title%,,0.5
+    If errorlevel = 0
+    Send ^{backspace 2}%i_tag%{enter}
+  }
 
   ;Outlook add category
-	outlook_categoryadd(i_title,i_tag){
-		this.outlookcategory_set()
-		WinWaitactive %i_title%,,0.5
-		If errorlevel = 0
-		{
-			Send %i_tag%
-			Send {enter}
-		}
-	}
+  outlook_categoryadd(i_title,i_tag){
+    this.outlookcategory_set()
+    WinWaitactive %i_title%,,0.5
+    If errorlevel = 0
+    {
+    Send %i_tag%
+    Send {enter}
+    }
+  }
 
   ;Outlook set category
-	outlook_categoryset(i_appcategory){
-		Send ^q
-		Send %i_appcategory%
-	}
+  outlook_categoryset(i_appcategory){
+    Send ^q
+    Send %i_appcategory%
+  }
 
   ;----------------------------------------------------------------------;
   ; Wheel
@@ -1219,22 +1385,24 @@ class zclwin{
       Exit
 
     this.winmouse()
-
+    
     If A_class in Chrome_WidgetWin_1,XLMAIN
     {
-      If A_keyname contains WheelRight,CtrlShift
+      If A_keyname contains wheelright,ctrlshift
         Send ^{pgup}
       Else
         Send ^{pgdn}
     }
     Else if A_class in DSUI:PDFXCViewer,QWidget
-      If A_keyname contains WheelRight,CtrlShift
+    {
+      If A_keyname contains wheelright,ctrlshift
         Send ^+{tab}
       Else
         Send ^{tab}
+    }
     Else
     {
-      If A_keyname contains WheelRight,CtrlShift
+      If A_keyname contains wheelright,ctrlshift
         Send #{\}
       Else
         Send #^{\}
@@ -1278,19 +1446,18 @@ class zclwin{
   ;----------------------------------------------------------------------;
   ; Word
   ;----------------------------------------------------------------------;
-	;Word resize
+  ;Word resize
   word_resize(size){
-		Sleep 100
-		Send ^+{r}
-		WinWaitactive ahk_class bosa_sdm_msword,,5
-		If errorlevel = 0
-		{
-			ControlClick RichEdit20W16
-			ControlSetText RichEdit20W16, %size%
-			Send {space}{enter}
-		}
-	}
-
+    Sleep 100
+    Send !{2}
+    WinWaitactive ahk_class bosa_sdm_msword,,5
+    If errorlevel = 0
+    {
+      ControlClick RichEdit20W16
+      ControlSetText RichEdit20W16, %size%
+      Send {space}{enter}
+    }
+  }
 }
 
 ;**********************************************************************
@@ -1308,5 +1475,4 @@ class zclqas extends zclbase{
     winwait Selec.objeto,,3
     Send {space}{down}{enter}+{home}
   }
-
 }

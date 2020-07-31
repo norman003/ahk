@@ -1,6 +1,6 @@
 Menu Tray, Icon, shell32.dll, 25
-#Include D:\OneDrive\Au\Apps\Ahk\App_auto\Automate_prd.ahk
-#Include D:\OneDrive\Au\Apps\Ahk\App_auto\Automate_qas.ahk
+#Include D:\OneDrive\Ap\Apps\Ahk\App_auto\Automate_prd.ahk
+#Include D:\OneDrive\Ap\Apps\Ahk\App_auto\Automate_dev.ahk
 GroupAdd gr_sap_launch, ahk_exe Listary.exe
 GroupAdd gr_sap_launch, ahk_exe everything.exe
 GroupAdd gr_sap_debug, debugging
@@ -8,24 +8,24 @@ GroupAdd gr_sap_debug, debugger
 inicializa()
 inicializa(){
 go := {base: new zclbase(),sap: new zclsap(),job: new zcljob(), qas: new zclqas()}
-go.varglobal("D:\OneDrive\Au\Apps\Ahk\App_om\omt.ini")
-go.varglobal("D:\OneDrive\Au\Apps\Ahk\App_auto\files\automate.ini")
+go.varglobal("D:\OneDrive\Ap\Apps\Ahk\App_om\omt.ini")
+go.varglobal("D:\OneDrive\Ap\Apps\Ahk\App_auto\files\automate.ini")
 }
-:*:a[::
+:*:[a::
 go.sendcopy("á")
-:*:e[::
+:*:[e::
 go.sendcopy("é")
-:*:i[::
+:*:[i::
 go.sendcopy("í")
-:*:o[::
+:*:[o::
 go.sendcopy("ó")
-:*:u[::
+:*:[u::
 go.sendcopy("ú")
 :*:nn::
-go.sendcopy("zomt_ticket")
-:*:nd::
+go.sap.sendticket("zomt_ticket")
+:*:n1::
 go.sendcopy("zomt_desc")
-:*:nf::
+:*:n2::
 go.sendcopy("zomt_title")
 ::"I::
 ::"E::
@@ -36,46 +36,40 @@ go.sap.abap_commentblock(A_thislabel,"NTP",zomt_ticket)
 $ESC::go.app_close()
 $^w::go.app_close()
 #w::go.app_closeprocess()
-`::Send %A_switchero%
-$F1::Send %A_everything%
-$F11::Send %A_switchero%
-$F12::Send %A_everything%
-$+F1::Send {F1}
-$+F2::Send {F2}
-$+F11::Send {F11}
-$+F12::Send {F12}
-Numpad1::go.run("A_outlook")
-Numpad2::go.run("A_code")
-Numpad3::go.run("A_brave")
-Numpad4::go.run("A_snipaste")
-Numpad5::go.run("A_wps")
-Numpad6::go.run("A_notepad2")
+#c::Send ^{a}^{c}
+#v::Send ^{a}^{v}^{s}
+`::Send %A_diito%
+$F1::go.run("A_everything")
+!F1::go.run("A_listary")
 Numpad7::go.run("A_winword")
 Numpad8::go.run("A_saplogon")
 Numpad9::go.run("A_excel")
+Numpad4::go.run("A_firefox")
+Numpad5::go.run("A_onenote")
+Numpad6::go.run("A_code")
+Numpad1::go.run("A_snipaste")
+Numpad2::go.run("A_notion")
+Numpad3::go.run("A_copyq")
 Numpad0::go.sap.logon("zomt_logon1")
 NumpadDot::go.sap.logon("zomt_logon2")
 ^NumpadDot::go.sap.logon("zomt_logon3")
-NumLock::go.excel_keyr("zomt_excel")
+NumLock::go.excel_sendctrlr("zomt_excel")
 $WheelDown::
 $WheelUp::
 go.wheel_click()
-WheelRight::
-WheelLeft::
 $^tab::
 $^+tab::
 go.wheel_ctrltab()
 !WheelUp::
 !WheelDown::
 go.wheel_alttab()
-#IfWinActive ahk_exe Switcheroo.exe
-lbutton::Send {click 2}
-del::Send ^w
 #IfWinActive ahk_exe Outlook.exe
 #IfWinActive ahk_exe Excel.exe
+^left::Send ^{pgup}
+^right::Send ^{pgdn}
 ^t::Send +{F11}
 #IfWinActive ahk_exe Winword.exe
-!7::go.word_resize("70")
+!7::go.word_resize("75")
 !8::go.word_resize("80")
 !9::go.word_resize("90")
 #IfWinActive Visual Basic for Applications -
@@ -83,23 +77,34 @@ del::Send ^w
 F3::Send ^+{F2}
 #IfWinActive ahk_exe Bcompare.exe
 !enter::Send {enter}
+F4::Send ^{a}!{i}!{pgdn}
 #IfWinActive ahk_exe Copyq.exe
 tab::Send ^{tab}
-#IfWinActive ahk_exe Snipaste.exe
+#IfWinActive Snipper - Snipaste
 c::go.winsel()
-d::
++c::go.winsel(,on)
+1::
 go.winsel()
-go.run_cmd("D:\OneDrive\Au\Apps\Python\crop.py")
+go.run_cmd("D:\OneDrive\Ap\Apps\Python\900.py")
+2::
+go.winsel()
+go.run_cmd("D:\OneDrive\Ap\Apps\Python\1550.py")
 #IfWinActive ahk_exe Code.exe
 F5::Send ^p
 F4::Send ^+{o}
-F3::Send ^+{p}
+F6::Send ^+{p}
+#IfWinActive omt.ini
+~^s::reload
 #IfWinActive Automate_
 ~^s::reload
 #IfWinActive ahk_exe Notepad++.exe
 ^tab::Send ^{pgdn}
 #IfWinActive ahk_exe wps.exe
 ^Enter::Send ^{c}!{tab}^{v}
+#IfWinActive ahk_exe Everything.exe
+F12::go.everything_copycontent()
+#IfWinActive ahk_exe Notion.exe
+F4::Send ^p
 #IfWinActive ahk_group Gr_sap_debug
 !q::go.sap.qasopen_var()
 !`::go.sap.qasopen_val()
@@ -109,9 +114,13 @@ F5::Send {F5}
 (::Send (){left}
 $enter::go.sap.tcode("enter")
 ^+k::^+l
-F4::go.qas.se80()
-F5::Send ^n
-^+w::go.sap.tcode("/nex")
+F4::Send ^{f}
+F5::go.sap.tcode("ymt")
+!f3::Send ^{f}{enter}{esc}
++F3::Send {F3}
++F4::Send {F4}
+~+F5::go.sap.tratarobjeto()
+!w::go.sap.tcode("/nex")
 !h::go.sap.tcode("/h")
 !f8::
 go.sap.tcode("/h")
@@ -124,15 +133,27 @@ return
 !right::Send +{F7}
 :*:qas::
 go.sap.qasopen()
-!1::go.sap.tcode("se11")
+!F1::go.sap.tcode("ymt")
+!1::go.sap.tcodeopen("se11")
 !3::go.sap.tcode("se93")
-!4::go.sap.tcode("se24")
+!4::go.sap.tcodeopen("se24")
 !6::go.sap.tcode("se16n")
-!7::go.sap.tcode("se37")
-!8::go.sap.tcode("se38")
+!7::go.sap.tcodeopen("se37")
+!8::go.sap.tcodeopen("se38")
 !9::go.sap.tcode("se09")
+!0::go.sap.tcode("se80")
+^+1::go.sap.tcodeopen("/ose11")
+^+3::go.sap.tcode("/ose93")
+^+4::go.sap.tcodeopen("/ose24")
+^+6::go.sap.tcode("/ose16n")
+^+7::go.sap.tcodeopen("/ose37")
+^+8::go.sap.tcodeopen("/ose38")
+^+9::go.sap.tcode("/ose09")
+^+0::go.sap.tcode("/ose80")
 :*b0:spro::
 :*b0:ymt::
+:*b0:ymg::
+:*b0:ymr::
 :*b0:se11::
 :*b0:se18::
 :*b0:se24::
@@ -142,8 +163,11 @@ go.sap.qasopen()
 :*b0:scc1::
 :*b0:stms::
 :*b0:sost::
+:*b0:sq01::
+:*b0:sq02::
 :*b0:fb02::
 :*b0:fb03::
+:*b0:fb60::
 :*b0:me22n::
 :*b0:me23n::
 :*b0:me33k::
@@ -167,8 +191,8 @@ go.sap.qasopen()
 :*b0:zosfer03::
 :*b0:zosfer04::
 :*b0:zospell00::
-:*b0:zosdms00::
-:*b0:zosdms00::
+:*b0:zqm021::
+:*b0:zqm026::
 go.sap.tcode("complete")
 #IfWinActive ahk_group gr_sap_launch
 :*b0:ac1::
@@ -203,9 +227,13 @@ go.sap.tcode("complete")
 :*b0:em1::
 :*b0:em2::
 :*b0:em3::
+:*b0:id1::
 :*b0:in1::
 :*b0:in2::
 :*b0:in3::
+:*b0:il1::
+:*b0:il2::
+:*b0:il3::
 :*b0:ip1::
 :*b0:ip2::
 :*b0:ip3::
