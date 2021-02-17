@@ -1,9 +1,0 @@
-    Loop parse, lt_file,`n, `r
-    { 
-      If A_LoopField contains txt,
-      {
-        FileRead clipboard, %A_LoopField%
-        ClipWait 1
-        Send ^{v}{enter}
-      }
-    }

@@ -1,5 +1,0 @@
-WinWait Biblioteca de funciones: Acceso,,5
-if errorlevel = 0
-{
-  
-}

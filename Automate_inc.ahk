@@ -1,0 +1,1 @@
+#Include D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\Automate.ahk

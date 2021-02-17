@@ -1,54 +1,62 @@
 
 class zcldev{
 
-  ;Key spanish replace
- keyspanish(in,out){
-  this.winA()
-  
-    ;Validar lenguaje de teclado spanish
-    ;Validar lenguaje de windows
-  IF A_langu_es<>
-  {
-   If A_class in wndclass_desked_gsk,borrarentrada ;Excepcion Editor de macro excel
-    Send ^{%in%}
-   Else If A_exe in winword.exe,excel.exe,mspaint.exe,notepad.exe,explorer.exe,outlook.exe ;,OneNote
-    Send ^{%out%}
-   Else 
-    Send ^{%in%}
+  se80(){
+    zclsap.tcode("se80")
+    winwait Object Navigator,,5 
+    Send +{F5}
+    winwait Selec.objeto,,3
+    Send {space}{down}{enter}+{home}
   }
-  Else
+
+  ;Key spanish replace
+  keyspanish(in,out){
+    this.winA()
+    
+      ;Validar lenguaje de teclado spanish
+      ;Validar lenguaje de windows
+    IF A_langu_es<>
+    {
+    If A_class in wndclass_desked_gsk,borrarentrada ;Excepcion Editor de macro excel
       Send ^{%in%}
- }
+    Else If A_exe in winword.exe,excel.exe,mspaint.exe,notepad.exe,explorer.exe,outlook.exe ;,OneNote
+      Send ^{%out%}
+    Else 
+      Send ^{%in%}
+    }
+    Else
+      Send ^{%in%}
+  }
 
   ;Read ini from script
   iniread_script(i_script,i_section,i_key){
     ;Script
-  l_scriptini := this.scriptini(i_script)
+    l_scriptini := this.scriptini(i_script)
   
     ;Clear key
-  l_key := this.keyname(i_key)
+    l_key := this.keyname(i_key)
   
     ;ReadFile Ini
-  IniRead r_value, %l_scriptini%, %i_section%, %l_key%
-  If (r_value="ERROR" or r_value="")
-  {
-   Msgbox Debug: %l_scriptini%, %i_section%, %l_key%, %r_value%
-   r_value=
+    IniRead r_value, %l_scriptini%, %i_section%, %l_key%
+    If (r_value="ERROR" or r_value="")
+    {
+      Msgbox Debug: %l_scriptini%, %i_section%, %l_key%, %r_value%
+      r_value=
+    }
+    return r_value
   }
-  return r_value
- }
  
   ;Write ini of script
   iniwrite_script(i_script,i_section,i_key,i_value){
     ;Script
-  l_scriptini := this.scriptini(i_script)
+    l_scriptini := this.scriptini(i_script)
   
     ;Clear key
-  l_key := this.keyname(i_key)
+    l_key := this.keyname(i_key)
   
     ;WriteFile Ini
-  IniWrite %i_value%, %l_scriptini%, %i_section%, %l_key%
- }
+    IniWrite %i_value%, %l_scriptini%, %i_section%, %l_key%
+  }
 
   job_hotcorner(){
     CoordMode Mouse, Screen
@@ -144,27 +152,59 @@ class zcldev{
   }
 
   test(){
-; Initialize string to search.
-Colors := "red,green|blue;yellow|cyan,magenta"
-; Initialize counter to keep track of our position in the string.
-Position := 0
+    ; Initialize string to search.
+    Colors := "red,green|blue;yellow|cyan,magenta"
+    ; Initialize counter to keep track of our position in the string.
+    Position := 0
 
-Loop, Parse, Colors, `,|;
-{
-    ; Calculate the position of the delimiter at the end of this field.
-    Position += StrLen(A_LoopField) + 1
-    ; Retrieve the delimiter found by the parsing loop.
-    Delimiter := SubStr(Colors, Position, 1)
+    Loop, Parse, Colors, `,|;
+    {
+        ; Calculate the position of the delimiter at the end of this field.
+        Position += StrLen(A_LoopField) + 1
+        ; Retrieve the delimiter found by the parsing loop.
+        Delimiter := SubStr(Colors, Position, 1)
 
-    MsgBox Field: %A_LoopField%`nDelimiter: %Delimiter%
-}
+        MsgBox Field: %A_LoopField%`nDelimiter: %Delimiter%
+    }
   }
 
   test1(){
     l := "https://omniasolution.sharepoint.com/:x:/r/sites/Bienvenido/Areas/AAC/_layouts/15/Doc.aspx?sourcedoc=%7B774415D9-07B3-42AF-8DFB-7AE8BE016711%7D&file=CONTRASE%C3%91AS_CLIENTES.xlsx&action=default&mobileredirect=true&cid=b2a1870c-2b61-450e-859c-bdf2b79914ab"
     UrlDownloadToFile %l%, D:\a.xls
   }
+
+    transport(){
+    Send ^{/}{tab 7}
+    Sleep 100
+    this.sendcopy("zomt_mandt2")
+    Sleep 100
+    Send {tab}
+    this.userpass("2","")
+  }
+  userpass(i_id,i_noexit="x"){
+    If i_id=1
+    {
+      this.sendcopy("zomt_user1",i_noexit)
+      Sleep 100
+      Send {tab}
+      this.sendcopy("zomt_pass1",i_noexit)
+    }
+    If i_id=2
+    {
+      this.sendcopy("zomt_user2",i_noexit)
+      Sleep 100
+      Send {tab}
+      this.sendcopy("zomt_pass2",i_noexit)
+    }
+    If i_id=3
+    {
+      this.sendcopy("zomt_user3",i_noexit)
+      Sleep 100
+      Send {tab}
+      this.sendcopy("zomt_pass3",i_noexit)
+    }
+    Sleep 100
+    Send {enter}
+    Exit
+  }
 }
-
-
-zcldev.test1()
