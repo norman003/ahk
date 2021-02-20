@@ -33,12 +33,56 @@ Global A_Abapext,A_vpn_sw
 Global 100_section, 100_key, 100_wintitle
 
 ;Objects
-Global go
+Global go,ui
+
+;**********************************************************************
+; Util
+;**********************************************************************
+class zclutil{
+
+  ;----------------------------------------------------------------------;
+  ; Inicializa
+  ;----------------------------------------------------------------------;
+  __New(){
+    ;01. Caracteristicas
+    SendMode Input ;Due to its superior speed and reliability
+    ;SetWorkingDir %A_ScriptDir%  ;Ensures a consistent starting directory
+    SetTitleMatchMode 2 ;Modo comparar por titulo de ventanas
+    ;02. DetectHiddenText on          ;Detectar ventanas ocultas
+
+    ;03. Constants
+    up=up
+    dn=dn
+    on=x
+    off=
+    debug=x
+    noexit=x
+
+    ;04. Global
+    A_scriptini := this.scriptini(A_scriptname)
+    A_filename := this.scriptname()
+    EnvGet A_onedrive2, OneDrive
+    FormatTime A_day,,ddMMyy
+    FormatTime A_day_en,,yyMMdd
+    FormatTime A_day2,,dd.MM.yy
+    FormatTime A_day2_en,,yy.MM.dd
+    FormatTime A_day3,,yyyy-MM-dd
+    If A_Language in 040A,080A,0C0A,100A,140A,180A,1C0A,200A,240A,280A,2C0A,300A,340A,380A,3C0A,400A,440A,480A,4C0A,500A,540A
+      A_langu_es := "X"
+    Else
+      A_langu_es := ""
+  }
+
+}
 
 ;**********************************************************************
 ; Window
 ;**********************************************************************
 class zclapp{
+
+  __New(){
+    ui := new zclutil()
+  }
 
   ;----------------------------------------------------------------------;
   ; App
@@ -535,45 +579,6 @@ class zclapp{
         Send {end}{backspace}
     }
   }
-}
-
-;**********************************************************************
-; Util
-;**********************************************************************
-class zclutil extends zclapp{
-
-  ;----------------------------------------------------------------------;
-  ; Inicializa
-  ;----------------------------------------------------------------------;
-  __New(){
-    ;01. Caracteristicas
-    SendMode Input ;Due to its superior speed and reliability
-    ;SetWorkingDir %A_ScriptDir%  ;Ensures a consistent starting directory
-    SetTitleMatchMode 2 ;Modo comparar por titulo de ventanas
-    ;02. DetectHiddenText on          ;Detectar ventanas ocultas
-
-    ;03. Constants
-    up=up
-    dn=dn
-    on=x
-    off=
-    debug=x
-    noexit=x
-
-    ;04. Global
-    A_scriptini := this.scriptini(A_scriptname)
-    A_filename := this.scriptname()
-    EnvGet A_onedrive2, OneDrive
-    FormatTime A_day,,ddMMyy
-    FormatTime A_day_en,,yyMMdd
-    FormatTime A_day2,,dd.MM.yy
-    FormatTime A_day2_en,,yy.MM.dd
-    FormatTime A_day3,,yyyy-MM-dd
-    If A_Language in 040A,080A,0C0A,100A,140A,180A,1C0A,200A,240A,280A,2C0A,300A,340A,380A,3C0A,400A,440A,480A,4C0A,500A,540A
-      A_langu_es := "X"
-    Else
-      A_langu_es := ""
-  }
 
   ;----------------------------------------------------------------------;
   ; Files .Ini
@@ -933,7 +938,7 @@ class zclutil extends zclapp{
   ;----------------------------------------------------------------------;
   ; Envio de texto
   ;----------------------------------------------------------------------;
-  ;Send RAW
+  ;Send raw
   sendraw(val,i_debug=""){
     val := this.varget(val,i_debug)
     sendraw %val%
@@ -942,7 +947,7 @@ class zclutil extends zclapp{
       Exit
   }
 
-  ;Send CLIPBOARD
+  ;Send clipboard
   sendcopy(i_val,i_noexit="",i_key_beFore="",i_key_after="",i_debug=""){
     ;01. key beFore
     If i_key_beFore<>
@@ -968,7 +973,7 @@ class zclutil extends zclapp{
     }
   }
 
-  ;Send KEYWORD
+  ;Send keyword
   sendk(i_word){
     Send +{home}
     this.sendcopy(i_word)
@@ -1297,7 +1302,7 @@ class zclutil extends zclapp{
       ;Return
 
     100_close:
-      zclutil.winA()
+      zclapp.winA()
       If A_title <> %100_section%
       {
         SetTimer 100_close,off
@@ -1317,12 +1322,13 @@ class zclutil extends zclapp{
     Sleep 2000
     ToolTip
   }
+
 }
 
 ;**********************************************************************
 ; Sap
 ;**********************************************************************
-class zclsap extends zclutil{
+class zclsap{
   ;Activar abap
   abap_activate(i_all=""){
 
@@ -1978,7 +1984,7 @@ class zclsap extends zclutil{
 ;**********************************************************************
 ; Job
 ;**********************************************************************
-class zcljob extends zclutil{
+class zcljob{
   inicializa_job(i_ymg){
     ;01. settimer job_min, 60000
     ;02. settimer job_hotcorner, 100
@@ -2003,7 +2009,7 @@ class zcljob extends zclutil{
 ;**********************************************************************
 ; Test
 ;**********************************************************************
-class zcldev extends zclutil{
+class zcldev{
   reenumerar_ahk(){
 
     ;01. text

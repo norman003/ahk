@@ -1,2 +1,2 @@
-﻿zclutil.run_file()
+﻿zclapp.run_file()
 #Include %A_scriptdir%\..\automate_inc.ahk

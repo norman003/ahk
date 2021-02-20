@@ -8,5 +8,5 @@ IF alt=1
 Else If ctrl=1
   msgbox customizar
 Else
-  zclutil.run_file("","1")
+  zclapp.run_file("","1")
 #Include %A_scriptdir%\..\automate_inc.ahk
