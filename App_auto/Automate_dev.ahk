@@ -208,3 +208,199 @@ class zcldev{
     Exit
   }
 }
+
+class zcljob{
+  job_folderlog(i_folder,i_filereturn){
+    If i_folder=
+      Exit
+    txt := FileOpen(i_filereturn, "w")
+    txt.write()
+    txt.close()
+
+    ;Leer versión de cada archivos abap
+    Loop Files, %i_folder%*%A_abapext%
+    {
+      ;Obtiene lineas
+      FileRead Text, %i_folder%%A_LoopFileName%
+      l_file := StrReplace(A_LoopFileName, A_abapext, "")
+
+      If l_file=ym_g
+      {
+        Loop Parse, Text, `n, `r
+          lines = %A_Index%
+        lines--
+        lines--
+      }
+      Else
+        lines = 100000
+
+      l_version=
+      Loop Parse, Text, `n, `r
+      {
+        If A_Index = 5
+          l_version = %A_LoopField%
+        If A_Index = %lines%
+          l_version = %A_LoopField%
+      }
+      ;Escribir txt
+      FileAppend %l_file%%A_Tab%%l_version%`n, %i_filereturn%
+    }
+  }
+
+  job_folderjson(i_folder,i_py){
+    If i_folder=
+      Exit
+
+    ;EnvSub L_Now, A_Now [, TimeUnits]
+
+    ;Leer versión de cada archivos abap
+    Loop Files, %i_folder%*%A_abapext%
+    {
+      ;Obtiene lineas
+      FileGetTime l_time, %i_folder%%A_LoopFileName%, M
+      ;FormatTime, l_time [, YYYYMMDDHH24MISS, Format]
+      ;msgbox %l_time%
+    }
+
+    ;If l_json<>
+    ;  Run %comspec% %i_py%
+  }
+
+}
+
+class outlook{
+  ;Outlook set category
+  outlook_category(i_title,i_tag,i_appcategory){
+    this.outlook_categoryset(i_appcategory)
+    WinWaitactive %i_title%,,0.5
+    If errorlevel = 0
+      Send ^{backspace 2}%i_tag%{enter}
+  }
+
+  ;Outlook add category
+  outlook_categoryadd(i_title,i_tag){
+    this.outlook_categoryset()
+    WinWaitactive %i_title%,,0.5
+    If errorlevel = 0
+    {
+      Send %i_tag%
+      Send {enter}
+    }
+  }
+
+  ;Outlook set category
+  outlook_categoryset(i_appcategory){
+    Send ^q
+    Send %i_appcategory%
+  }
+}
+
+class zclapp{
+  ;----------------------------------------------------------------------;
+  ; Wheel
+  ;----------------------------------------------------------------------;
+  ;Wheel in alttab
+  wheel_alttab(){
+    If this.IsWheel()
+      Exit
+
+    this.winmouse()
+
+    If A_class=MultitaskingViewFrame
+    {
+      If A_keyname contains WheelRight,
+        send {blind}{left}
+      Else
+        send {blind}{right}
+    }
+    Else If A_exe = switcheroo.exe
+      Send {Click}
+    Else
+      Send !{tab}
+    Exit
+  }
+
+  ;Wheel in altesc
+  wheel_altesc(){
+    If this.IsWheel()
+      Exit
+
+    this.winmouse()
+
+    If A_class=MultitaskingViewFrame
+      send {blind}{click}
+    Else If A_keyname contains WheelRight,
+      Send !+{esc}
+    Else
+      Send !{esc}
+    Exit
+  }
+
+  ;Wheel in ctrltab
+  wheel_ctrltab(){
+    If this.IsWheel()
+      Exit
+
+    this.winmouse()
+
+    If A_class in Chrome_WidgetWin_1
+    {
+      If A_keyname contains wheelright,ctrlshIft
+        Send ^{pgup}
+      Else
+        Send ^{pgdn}
+    }
+    Else If A_class in DSUI:PDFXCViewer,QWidget
+    {
+      If A_keyname contains wheelright,ctrlshIft
+        Send ^+{tab}
+      Else
+        Send ^{tab}
+    }
+    Else
+    {
+      If A_keyname contains wheelright,ctrlshIft
+        Send #{\}
+      Else
+        Send #^{\}
+    }
+    Exit
+  }
+
+  ;Wheel in click
+  wheel_click(){
+    this.winmouse()
+
+    ;1 Click
+    ;1.1. Control - list
+    If this.iscontainslist(A_control,"gtc1_scroll")
+      Send {Click}
+
+    ;1.2. Control - contains
+    Else If this.iscontainslist(A_control,"gtc2_scroll")
+      Send {Click 2}
+
+    ;2. Casos especiales
+    ;2.1 Sap - Title
+    If A_title contains variantes,
+      Send {Click 2}
+
+    ;2.3 Switchero
+    Else If A_exe = switcheroo.exe
+      Send {Click 2}
+
+    ;2.4 Taskbar
+    Else If A_class = Shell_TrayWnd
+    {
+      If A_control=TrayNotIfyWnd1
+        Send #{d}
+      Else
+        Send ^{click}
+    }
+    Else
+
+    ;3 Para todos en general
+    Send {%A_key%}
+    Exit
+  }
+}

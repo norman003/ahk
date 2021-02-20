@@ -9,7 +9,7 @@ GroupAdd gr_sap_debug, debugger
 inicializa()
 inicializa(){
 A_automate_dir = D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\
-go := {base: new zclutil(), sap: new zclsap(), job: new zcljob()}
+go := {base: new zclutil(), sap: new zclsap(), job: new zcljob(), dev: new zcldev()}
 go.varglobal("D:\nt\cloud\OneDrive\Ap\Apps\Ahk\App_omnia\omt.ini")
 go.varglobal("files\automate.ini")
 go.snipasteauto_ticket()
@@ -24,9 +24,19 @@ go.snipasteauto_ticket()
 ~^s::reload
 #IfWinActive ahk_exe Outlook.exe
 F4::go.run_ost("zomt_excel")
-^p::go.run("http://osss.omniasolution.com:8093/Planificacion/GestionarPlanificacion")
-^n::go.run("https://osss.omniasolution.com:8090/en/#/inicio/consulta-ticket")
-^o::go.run("https://osss.omniasolution.com/(S(psg4o5riybusqjv5s2lyna45))/login.aspx")
+^t::go.outlook_time()
+^p::
+Send !{2}
+go.run("http://osss.omniasolution.com:8093/Planificacion/GestionarPlanificacion")
+return
+^n::
+Send !{2}
+go.run("https://osss.omniasolution.com:8090/en/#/inicio/consulta-ticket")
+return
+^o::
+Send !{2}
+go.run("https://osss.omniasolution.com/(S(psg4o5riybusqjv5s2lyna45))/login.aspx")
+return
 !w::Send ^+1
 #IfWinActive ahk_exe Excel.exe
 ^left::Send ^{pgup}
@@ -42,10 +52,11 @@ F3::Send ^f
 #IfWinActive ahk_exe Bcompare.exe
 !enter::Send {enter}
 F4::Send ^{a}!{i}!{pgdn}
+#IfWinActive .ahk
+^!f::go.dev.reenumerar_ahk()
 #IfWinActive ahk_exe Code.exe
 F4::Send ^+{o}
 +F4::Send ^+{p}
-F5::Send ^p
 #IfWinActive ahk_exe sublime_text.exe
 F4::Send ^{r}
 +F4::Send ^+{r}
@@ -59,6 +70,7 @@ Send *
 return
 ^+tab::Send ^{pgup}
 ^tab::Send ^{pgdn}
+$^F3::go.sap.abap_sync()
 #IfWinActive ahk_class EVERYTHING
 F1::go.run("A_everything_code")
 #IfWinActive ahk_group gr_launcher
@@ -226,6 +238,8 @@ Send !{esc}
 return
 #IfWinActive ahk_class #32770
 ~enter::go.enter_32770()
+#IfWinActive /000 SAP
+!q::go.sap.qas_transport()
 #IfWinActive ahk_group Gr_sap_debug
 !q::go.sap.qasopen_var()
 !`::go.sap.qasopen_val()
@@ -239,6 +253,7 @@ return
 !left::Send +{F6}
 !right::Send +{F7}
 !n::Send ^{/}
+^n::Send ^{/}/o
 !t::go.sap.tcode("ymt")
 !r::go.sap.tcodebutton("ymt","=btn3a")
 !1::go.sap.tcode("se11")

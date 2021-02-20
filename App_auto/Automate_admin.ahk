@@ -9,7 +9,7 @@ GroupAdd gr_sap_debug, debugger
 inicializa()
 inicializa(){
 A_automate_dir = D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\
-go := {base: new zclutil(), sap: new zclsap(), job: new zcljob()}
+go := {base: new zclutil(), sap: new zclsap(), job: new zcljob(), dev: new zcldev()}
 go.varglobal("D:\nt\cloud\OneDrive\Ap\Apps\Ahk\App_omnia\omt.ini")
 go.varglobal("files\automate.ini")
 go.snipasteauto_ticket()
@@ -27,12 +27,10 @@ go.sap.abap_commentblock(A_thislabel,"NTP",zomt_ticket)
 :*:nn::
 go.sendcopy("zomt_ticket")
 :*:n1::
-go.sendcopy("zomt_desc")
-:*:n2::
 go.sendcopy("zomt_desc2")
-:*:n3::
+:*:n2::
 go.sendcopy("zomt_desc3")
-:*:n4::
+:*:n3::
 go.sendcopy("zomt_desc4")
 :*:d1::
 go.sendcopy("A_day_en")
@@ -44,25 +42,24 @@ go.sendcopy("A_day2_en")
 go.sendcopy("A_day2")
 ^!a::Reload
 $ESC::go.app_close()
-$`::go.run_docu("")
 ^`::go.run_docu("","x")
 $!`::go.run("A_groupy")
 !F1::go.run("A_switcheroo")
-NumLock::go.run("D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\Automate.xlsm")
+NumLock::go.run("A_eclipse")
 NumpadDiv::go.run("A_sublime")
-NumpadMult::go.run("A_chrome")
-NumpadSub::go.run("A_vscode")
+NumpadMult::go.run("A_vscode")
+NumpadSub::go.run("A_chrome")
 NumpadAdd::go.run("A_saplogon")
 Numpad7::go.run("A_excel")
 Numpad8::go.run("A_word")
 Numpad9::go.run("A_outlook")
-Numpad4::go.run("A_teams")
-Numpad5::go.run("")
-Numpad6::go.run("D:\NT\Cloud\OneDrive\PARA\Know\zcl_util.docx")
+Numpad4::go.run("A_diito")
+Numpad5::go.run("A_copyq")
+Numpad6::go.run("A_notepad2")
 Numpad1::go.run("")
 Numpad2::go.run("")
-Numpad3::go.run("")
-Numpad0::go.run("A_diito")
+Numpad3::go.run("D:\NT\Cloud\OneDrive\PARA\Know\zcl_util.docx")
+Numpad0::go.run("A_teams")
 NumpadDot::go.run("A_snipaste")
 ~Lbutton::go.click()
 XButton1::Send {Printscreen}
@@ -76,7 +73,6 @@ $+F2::Send {F2}
 !q::go.chrome_registroot()
 #IfWinActive ahk_exe chrome.exe
 !q::go.chrome_registroot()
-F2::go.chrome_opensearch()
 #IfWinActive ahk_exe firefox.exe
 !q::go.chrome_registroot()
 ^+n::^+p

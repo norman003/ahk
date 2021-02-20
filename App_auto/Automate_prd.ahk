@@ -3,16 +3,16 @@
 ;* Created  10.02.2015 - by norman tinco
 ;* 2088
 ;*--------------------------------------------------------------------*
-#NoEnv                      ;PerFormance and compatibility with future AutoHotkey
+#NoEnv ;PerFormance and compatibility with future AutoHotkey
 ;#Warn                      ;Enable warnings to assist with detecting common errors
-#SingleInstance Force       ;Una sola ejecución
-#Persistent                 ;Mantiene en ejecución
-#MaxHotkeysPerInterval 500  ;Max press hotkey
-SetNumLockState AlwaysOn    ;NumLock
-FileEncoding UTF-8          ;UTF-8
+#SingleInstance Force ;Una sola ejecución
+#Persistent ;Mantiene en ejecución
+#MaxHotkeysPerInterval 500 ;Max press hotkey
+;SetNumLockState AlwaysOn   ;NumLock
+FileEncoding UTF-8 ;UTF-8
 
 ;**********************************************************************
-; 0. Global
+; Global
 ;**********************************************************************
 ;Constants
 Global A_scriptini, A_onedrive2, A_langu_es, A_automate_dir, A_filename
@@ -47,29 +47,29 @@ class zclapp{
   app_close(i_noexclude=""){
     this.winA()
 
-    ;0. StrokesPlus
+    ;01. StrokesPlus
     Sleep 1
 
-    ;0. Send !Esc
+    ;02. Send !Esc
     If (this.Iswinactivearray("gt0_altesc") and i_noexclude="")
     {
       Send !{esc}
       Winactivate A
     }
 
-    ;2. Alt+f4
+    ;03. Alt+f4
     Else If this.Iswinactivearray("gt1_altf4")
       Send !{F4}
 
-    ;3. Send Esc
+    ;04. Send Esc
     Else If this.Iswinactivearray("gt2_esc")
       Send {esc}
 
-    ;4. Send ^W
+    ;05. Send ^W
     Else If this.Iswinactivearray("gt3_ctrlw")
       Send ^{w}
 
-    ;5. Saplogon
+    ;06. Saplogon
     Else If this.Iswinactivearray("gt4_kill")
     {
       Ifwinactive Debugger Table
@@ -183,7 +183,7 @@ class zclapp{
   }
 
   ;App For Esc
-  app_For_esc(i_key){
+  app_for_esc(i_key){
     If this.Iswinactivearray("gt2_esc")
       Send {esc}
     Else
@@ -222,16 +222,17 @@ class zclapp{
   ;----------------------------------------------------------------------;
   ;Run ost
   run_ost(i_file){
-    ;Outlook
+    ;01. Outlook
     Ifwinactive ahk_exe OUTLOOK.EXE
     {
       Send !{2}
       ClipWait 1
       l_sendctrlr=on
+      l_enter=on
       Winactivate OST -
     }
 
-    ;Ejecutar o Acticar OST
+    ;02. Ejecutar o Acticar OST
     IfWinactive OST -
       l_sendctrlr=on
     Else
@@ -240,8 +241,15 @@ class zclapp{
     ;Ctrl + R = Registro OST
     If l_sendctrlr=on
     {
-      Winwaitactive OST -
-      Send ^{r}
+      Winwaitactive OST -,,10
+      If errorlevel=0
+        Send ^{r}
+      If l_enter=on
+      {
+        WinWaitActive Registro,,5
+        If errorlevel=0
+          Send {enter}
+      }
     }
     Exit
   }
@@ -250,18 +258,18 @@ class zclapp{
   ; Edit
   ;----------------------------------------------------------------------;
   edit_snippet(){
-    ;0 copy selection
+    ;01. copy selection
     clipboard=
     Send ^c
 
-    ;1 select and copy
+    ;02. select and copy
     If clipboard=
       Send ^{right}^+{left}^c
 
-    ;2 open sublime
+    ;03. open sublime
     this.run("A_sublime")
 
-    ;3 open file
+    ;04. open file
     Send ^p
     Sleep 200
     Send ^v ;{enter}
@@ -271,10 +279,10 @@ class zclapp{
   ; Everything
   ;----------------------------------------------------------------------;
   everything_setcount(i_filename,i_getinstance="",i_debug=""){
-    ;0 Valid
+    ;01. Valid
     If i_filename contains :\,
     {
-      ;1 Get instance everything
+      ;01.1 Get instance everything
       If i_getinstance<>
       {
         If i_getinstance="X"
@@ -287,34 +295,34 @@ class zclapp{
         instance := strreplace(instance,")")
       }
 
-      ;2 build cmd
+      ;01.2 build cmd
       lcmd = D:\NT\Cloud\OneDrive\Au\Apps\Everything\es.exe -inc-run-count "%i_filename%"
       If instance<>
         lcmd := lcmd " -instance " instance
       If i_debug<>
         MsgBox %lcmd%
 
-      ;3 set
+      ;01.3 set
       this.run_cmd(lcmd)
     }
   }
 
   everything_copysnippet(i_debug=""){
-    ;0 Get files
+    ;01. Get files
     this.WinA()
     Send ^+{c}
     Sleep 200
 
-    ;1 Back
+    ;02. Back
     Send !{esc}
 
-    ;2 Pegar
+    ;03. Pegar
     lt_file := clipboard
     Loop parse, lt_file, `n,`r
     {
       If i_debug<>
         Msgbox %A_LoopField%
-      
+
       If A_LoopField contains txt,abap,
       {
         FileRead clipboard, %A_LoopField%
@@ -326,16 +334,16 @@ class zclapp{
   }
 
   everything_savesnippet(){
-    ;0 Obtener files
+    ;01. Obtener files
     lt_code := clipboard
     Send ^+{c}
     Sleep 200
-    ;ClipWait 2 ;listary
+    ;02. ClipWait 2 ;listary
 
-    ;1 Back
+    ;03. Back
     Send !{esc}
 
-    ;2 Guardar
+    ;04. Guardar
     If lt_code<>
     {
       FileDelete %clipboard%
@@ -346,52 +354,37 @@ class zclapp{
   }
 
   everything_editsnippet(){
-    ;0 Get files
+    ;01. Get files
     Send ^+{c}
     Sleep 200
 
-    ;1 Run
+    ;02. Run
     lt_file := clipboard
     Loop parse, lt_file, `n,`r
       If A_LoopField contains txt,abap,
       run "C:\Program Files\Sublime Text 3\sublime_text.exe" %A_LoopField%
   }
+
   ;----------------------------------------------------------------------;
   ; Outlook
   ;----------------------------------------------------------------------;
-  ;Outlook set category
-  outlook_category(i_title,i_tag,i_appcategory){
-    this.outlook_categoryset(i_appcategory)
-    WinWaitactive %i_title%,,0.5
-    If errorlevel = 0
-      Send ^{backspace 2}%i_tag%{enter}
-  }
+  ;Write osss
+  outlook_time(){
+    l_time := "http://osss.omniasolution.com:8093/Actividad/GestionarActividades?fec="A_day3
 
-  ;Outlook add category
-  outlook_categoryadd(i_title,i_tag){
-    this.outlook_categoryset()
-    WinWaitactive %i_title%,,0.5
-    If errorlevel = 0
-    {
-      Send %i_tag%
-      Send {enter}
-    }
-  }
-
-  ;Outlook set category
-  outlook_categoryset(i_appcategory){
-    Send ^q
-    Send %i_appcategory%
+    this.run(l_time)
   }
 
   ;----------------------------------------------------------------------;
   ; Snipaste
   ;----------------------------------------------------------------------;
   snipasteauto_ticket(i_debug=""){
-    l_desc := this.varget("zomt_desc")
-    l_title := this.varget("zomt_title")
+    l_desc := this.varget("zomt_desc2")
 
-    l_new = D:/NT/Local/Autocapture/%l_desc%-%l_title%/$yyMMdd_HHmmss$.png
+    If l_desc contains z,
+      Msgbox %A_ThisFunc%: l_desc
+
+    l_new = D:/NT/Local/Autocapture/%l_desc%/$yyMMdd_HHmmss$.png
     IniRead, l_old, D:\NT\Cloud\OneDrive\Au\Win_config\Snipaste\config.ini, Output, auto_save_path
     If l_new <> %l_old%
     {
@@ -423,126 +416,18 @@ class zclapp{
     soundset %level%
   }
 
-  ;----------------------------------------------------------------------;
-  ; Wheel
-  ;----------------------------------------------------------------------;
-  ;Wheel in alttab
-  wheel_alttab(){
-    If this.IsWheel()
-      Exit
-
-    this.winmouse()
-
-    If A_class=MultitaskingViewFrame
-    {
-      If A_keyname contains WheelRight,
-        send {blind}{left}
-      Else
-        send {blind}{right}
-    }
-    Else If A_exe = switcheroo.exe
-      Send {Click}
-    Else
-      Send !{tab}
-    Exit
-  }
-
-  ;Wheel in altesc
-  wheel_altesc(){
-    If this.IsWheel()
-      Exit
-
-    this.winmouse()
-
-    If A_class=MultitaskingViewFrame
-      send {blind}{click}
-    Else If A_keyname contains WheelRight,
-      Send !+{esc}
-    Else
-      Send !{esc}
-    Exit
-  }
-
-  ;Wheel in ctrltab
-  wheel_ctrltab(){
-    If this.IsWheel()
-      Exit
-
-    this.winmouse()
-
-    If A_class in Chrome_WidgetWin_1
-    {
-      If A_keyname contains wheelright,ctrlshIft
-        Send ^{pgup}
-      Else
-        Send ^{pgdn}
-    }
-    Else If A_class in DSUI:PDFXCViewer,QWidget
-    {
-      If A_keyname contains wheelright,ctrlshIft
-        Send ^+{tab}
-      Else
-        Send ^{tab}
-    }
-    Else
-    {
-      If A_keyname contains wheelright,ctrlshIft
-        Send #{\}
-      Else
-        Send #^{\}
-    }
-    Exit
-  }
-
-  ;Wheel in click
-  wheel_click(){
-    this.winmouse()
-
-    ;1 Click
-    ;1.1. Control - list
-    If this.iscontainslist(A_control,"gtc1_scroll")
-      Send {Click}
-
-    ;1.2. Control - contains
-    Else If this.iscontainslist(A_control,"gtc2_scroll")
-      Send {Click 2}
-
-    ;2. Casos especiales
-    ;2.1 Sap - Title
-    If A_title contains variantes,
-      Send {Click 2}
-
-    ;2.3 Switchero
-    Else If A_exe = switcheroo.exe
-      Send {Click 2}
-
-    ;2.4 Taskbar
-    Else If A_class = Shell_TrayWnd
-    {
-      If A_control=TrayNotIfyWnd1
-        Send #{d}
-      Else
-        Send ^{click}
-    }
-    Else
-
-    ;3 Para todos en general
-    Send {%A_key%}
-    Exit
-  }
-
   click(i_debug=""){
-    ;Get Control
+    ;01. Get Control
     CoordMode Mouse, Screen
     MouseGetPos A_x, A_y, A_id, A_control
     If i_debug<>
       Msgbox %A_control%
 
-    ;Taskbar
+    ;02. Taskbar
     If A_control=MSTaskListWClass1
       Send ^{click}
 
-    ;True launch bar
+    ;03. True launch bar
     If A_control=TrueLaunchBarWindow1
     {
       Winwait ahk_class TLB_HTML_WINDOW,,3
@@ -575,10 +460,6 @@ class zclapp{
       this.word_resize("75")
     }
   }
-
-  ;----------------------------------------------------------------------;
-  ; Explorer
-  ;----------------------------------------------------------------------;
 
   ;----------------------------------------------------------------------;
   ; Eclipse
@@ -648,12 +529,12 @@ class zclapp{
   enter_32770(){
     Ifwinactive OK
     {
-      Winactivate Buscar
-      Winwaitactive Buscar
-      Send {end}{backspace}
+      Winactivate Buscar,,5
+      Winwaitactive Buscar,,5
+      If ErrorLevel=0
+        Send {end}{backspace}
     }
   }
-
 }
 
 ;**********************************************************************
@@ -665,13 +546,13 @@ class zclutil extends zclapp{
   ; Inicializa
   ;----------------------------------------------------------------------;
   __New(){
-    ;Caracteristicas
-    SendMode Input                ;Due to its superior speed and reliability
+    ;01. Caracteristicas
+    SendMode Input ;Due to its superior speed and reliability
     ;SetWorkingDir %A_ScriptDir%  ;Ensures a consistent starting directory
-    SetTitleMatchMode 2           ;Modo comparar por titulo de ventanas
-    ;DetectHiddenText on          ;Detectar ventanas ocultas
+    SetTitleMatchMode 2 ;Modo comparar por titulo de ventanas
+    ;02. DetectHiddenText on          ;Detectar ventanas ocultas
 
-    ;Constants
+    ;03. Constants
     up=up
     dn=dn
     on=x
@@ -679,7 +560,7 @@ class zclutil extends zclapp{
     debug=x
     noexit=x
 
-    ;Global
+    ;04. Global
     A_scriptini := this.scriptini(A_scriptname)
     A_filename := this.scriptname()
     EnvGet A_onedrive2, OneDrive
@@ -687,6 +568,7 @@ class zclutil extends zclapp{
     FormatTime A_day_en,,yyMMdd
     FormatTime A_day2,,dd.MM.yy
     FormatTime A_day2_en,,yy.MM.dd
+    FormatTime A_day3,,yyyy-MM-dd
     If A_Language in 040A,080A,0C0A,100A,140A,180A,1C0A,200A,240A,280A,2C0A,300A,340A,380A,3C0A,400A,440A,480A,4C0A,500A,540A
       A_langu_es := "X"
     Else
@@ -698,10 +580,10 @@ class zclutil extends zclapp{
   ;----------------------------------------------------------------------;
   ;Read ini
   iniread(i_ini,i_section,i_key){
-    ;Clear key
+    ;01. Clear key
     ;l_key := this.keyname(i_key)
 
-    ;ReadFile Ini
+    ;02. ReadFile Ini
     IniRead r_value, %i_ini%, %i_section%, %i_key%
     If r_value="ERROR" or r_value=""
     {
@@ -723,21 +605,21 @@ class zclutil extends zclapp{
     return false
   }
 
-  ;Is hotstring
-  ishs(){
-    l_hs := ":*,::"
-    If A_thislabel contains %l_hs%
-      return True
-    return False
-  }
-
-  ;Esta En list
+  ;Esta en list
   isinlist(i_var,it_tab){
     l_list = % %it_tab%_
 
     If i_var in %l_list%
       return true
     return false
+  }
+
+  ;Is hotstring
+  ishs(){
+    l_hs := ":*,::"
+    If A_thislabel contains %l_hs%
+      return True
+    return False
   }
 
   ;Window is active
@@ -817,15 +699,15 @@ class zclutil extends zclapp{
     ;If this.IsWheel()
     ;  Exit
 
-    ;00 Cerrar launcher y obtener info de window last
+    ;01. Cerrar launcher y obtener info de window last
     ;this.app_closelaunch()
     ;this.winA("x")
 
-    ;01 Inicializa
+    ;02. Inicializa
     l_app := this.varget(i_app,i_debug)
     this.vartitle(l_app,l_title,i_debug) ;Separator ~|
 
-    ;02 Crear carpeta, docx, xlsx
+    ;03. Crear carpeta, docx, xlsx
     If l_app contains :\,
     {
       If !FileExist(l_app)
@@ -843,28 +725,29 @@ class zclutil extends zclapp{
             FileCreateDir %l_app%
 
           this.run2(l_app)
-          WinWaitActive %l_title%
-          WinActivate %l_title%
+          WinWaitActive %l_title%,,10
+          If errorlevel=0
+            WinActivate %l_title%
         }
         Else
           Exit
       }
     }
 
-    ;03 Validar
+    ;04. Validar
     If l_app=
       Msgbox %A_ThisFunc%: %i_app% - app esta vacia
 
-    ;04 Send Key
-    Else If l_app contains ^,!,#,
+    ;05. Send Key
+    Else If l_app contains ^,!
       Send %l_app%
 
-    ;05 Kill
+    ;06. Kill
     Else If l_app=taskkill
       Run %comspec% /c taskkill /im %l_title% /f,,hide
 
-    ;06 Call method
-    Else If l_app contains (,
+    ;07. Call method
+    Else If l_app contains go.
     {
       lt_line := StrSplit(l_app,".")
       l_class := lt_line[1]
@@ -872,7 +755,7 @@ class zclutil extends zclapp{
       l_app.(l_class)
     }
 
-    ;07 File or Link
+    ;08. File or Link
     Else If l_title<>
     {
       If winactive(l_title)
@@ -899,11 +782,11 @@ class zclutil extends zclapp{
       }
     }
 
-    ;08 Run All
+    ;09. Run All
     Else
       this.run2(l_app)
 
-    ;09 Mouse
+    ;10. Mouse
     If i_mousefactor<>
     {
       x := 300 * i_mousefactor
@@ -912,7 +795,7 @@ class zclutil extends zclapp{
       Mousemove %x%,%y%
     }
 
-    ;10 hotstring
+    ;11. hotstring
     If this.ishs()
       Exit
   }
@@ -932,25 +815,25 @@ class zclutil extends zclapp{
     shellWindows := ComObjCreate("{9BA05972-F6A8-11CF-A442-00A0C90A8F39}")
     desktop := shellWindows.Item(ComObj(19, 8)) ; VT_UI4, SCW_DESKTOP                
 
-    ;Retrieve top-level browser object.
+    ;01. Retrieve top-level browser object.
     If ptlb := ComObjQuery(desktop
       , "{4C96BE40-915C-11CF-99D3-00AA004AE837}" ; SID_STopLevelBrowser
     , "{000214E2-0000-0000-C000-000000000046}") ; IID_IShellBrowser
     {
-      ;IShellBrowser.QueryActiveShellView -> IShellView
+      ;01.1 IShellBrowser.QueryActiveShellView -> IShellView
       If DllCall(NumGet(NumGet(ptlb+0)+15*A_PtrSize), "ptr", ptlb, "ptr*", psv:=0) = 0
       {
-        ;Define IID_IDispatch.
+        ;01.11 Define IID_IDispatch.
         VarSetCapacity(IID_IDispatch, 16)
         NumPut(0x46000000000000C0, NumPut(0x20400, IID_IDispatch, "int64"), "int64")
 
         ;IShellView.GetItemObject -> IDispatch (object which implements IShellFolderViewDual)
         DllCall(NumGet(NumGet(psv+0)+15*A_PtrSize), "ptr", psv, "uint", 0, "ptr", &IID_IDispatch, "ptr*", pdisp:=0)
 
-        ;Get Shell object.
+        ;01.12 Get Shell object.
         shell := ComObj(9,pdisp,1).Application
 
-        ;IShellDispatch2.ShellExecute
+        ;01.13 IShellDispatch2.ShellExecute
         shell.ShellExecute(i_file)
 
         ObjRelease(psv)
@@ -961,19 +844,19 @@ class zclutil extends zclapp{
 
   ;Run from onedrive
   run_drive(i_path,i_path2="",i_path3=""){
-    ;values
+    ;01. values
     l_path := this.varget(i_path)
     l_path2 := this.varget(i_path2)
     l_path2 := this.keyclear(l_path2)
     l_path3 := this.varget(i_path3)
 
-    ;join
+    ;02. join
     l_dir = %A_onedrive2%%l_path%%l_path2%%l_path3%
 
-    ;run
+    ;03. run
     this.run2(l_dir)
 
-    ;hotstring
+    ;04. hotstring
     If this.ishs()
       Exit
   }
@@ -995,13 +878,13 @@ class zclutil extends zclapp{
 
   ;Run patron
   run_patron(i_folder,i_patron,i_debug=""){
-    ;0 patron
+    ;01. patron
     i_patron := i_patron ","
 
-    ;1 get
+    ;02. get
     l_folder := this.varget(i_folder,i_debug)
 
-    ;2 folder
+    ;03. folder
     Loop Files, %l_folder%\*
     {
       If A_LoopFileName contains %i_patron%
@@ -1061,11 +944,11 @@ class zclutil extends zclapp{
 
   ;Send CLIPBOARD
   sendcopy(i_val,i_noexit="",i_key_beFore="",i_key_after="",i_debug=""){
-    ;1 key beFore
+    ;01. key beFore
     If i_key_beFore<>
       Send {%i_key_beFore%}
 
-    ;2 paste value
+    ;02. paste value
     l_cliptemp := ClipboardAll
     clipboard := this.varget(i_val,i_debug)
     Send ^v
@@ -1073,7 +956,7 @@ class zclutil extends zclapp{
     clipboard := l_cliptemp
     l_cliptemp =
 
-    ;3 key after
+    ;03. key after
     If l_key_after<>
       Send {%i_key_after%}
 
@@ -1112,12 +995,12 @@ class zclutil extends zclapp{
   varget(i_var,i_debug=""){
     If i_var<>
     {
-      ;1 Leer variable
+      ;01.1 Leer variable
       try{ 
         r_value = % %i_var%
       }catch{}
 
-      ;2 Leer valor
+      ;01.2 Leer valor
       If r_value=
         r_value := i_var
 
@@ -1143,7 +1026,7 @@ class zclutil extends zclapp{
     {
       SplitPath l_app,l_title2,l_dir,l_extension,l_title
 
-      ;Extension
+      ;01.1 Extension
       If l_extension<>
       {
         If l_extension contains doc,
@@ -1153,7 +1036,7 @@ class zclutil extends zclapp{
         Else If l_extension in code-workspace,
           l_title := l_title " (Workspace)"
       }
-      ;Folder
+      ;01.2 Folder
       Else If l_app contains :\,
         l_title := l_app
     }
@@ -1177,7 +1060,7 @@ class zclutil extends zclapp{
     {
       ;msgbox %A_LoopReadLine%
 
-      ;Check
+      ;01.1 Check
       If A_LoopReadLine not contains [,],;
       {
         If A_LoopReadLine<>
@@ -1186,7 +1069,7 @@ class zclutil extends zclapp{
           g_var := gt_tab[1]
           g_val := this.varget(gt_tab[2])
 
-          ;1. Tabla
+          ;01.111 Tabla
           If g_var Contains gt,
           {
             If IsObject(%g_var%)
@@ -1199,7 +1082,7 @@ class zclutil extends zclapp{
             %g_var%.push(g_val)
           }
 
-          ;2. Variable
+          ;01.112 Variable
           Else
             %g_var% := g_val
         }
@@ -1210,7 +1093,7 @@ class zclutil extends zclapp{
   ;----------------------------------------------------------------------;
   ; Windows
   ;----------------------------------------------------------------------;
-  ;Data of WINDOW actual
+  ;Win actual
   wina(i_last=""){
     If i_last=
     {
@@ -1228,7 +1111,7 @@ class zclutil extends zclapp{
     }
   }
 
-  ;Data of WINDOW control
+  ;Win control
   wincontrol(){
     ;A_id := WinExist("A")
     Winget A_id, ID, A
@@ -1236,7 +1119,7 @@ class zclutil extends zclapp{
     Return r_control
   }
 
-  ;Data of WINDOW mouse
+  ;Win mouse
   winmouse(i_debug=""){
     CoordMode Mouse, Screen
     MouseGetPos A_x, A_y, A_id, A_control
@@ -1255,7 +1138,7 @@ class zclutil extends zclapp{
       Msgbox %A_ThisFunc%: %A_exe%-%A_class%-%A_control%-%A_title%
   }
 
-  ;Data of WINDOW list
+  ;Win list
   winlist(i_class){
     rs_list := ""
 
@@ -1276,7 +1159,7 @@ class zclutil extends zclapp{
   ;Select WINDOW y pegar en background
   run_docu(i_filename="",i_nuevo="",i_debug=""){
 
-    ;00 Prepara contenido
+    ;01. Prepara contenido
     Clipboard =
     Send ^{c}
     Sleep 100
@@ -1289,6 +1172,8 @@ class zclutil extends zclapp{
     {
       Send ^!s
       WinWaitActive ahk_exe Snipaste.exe,,5
+      If errorlevel<>0
+        Exit
       WinWaitClose ahk_exe Snipaste.exe
       snipaste=x
     }
@@ -1300,7 +1185,7 @@ class zclutil extends zclapp{
       Exit
     }
 
-    ;01 Filename asociado a hotkey
+    ;02. Filename asociado a hotkey
     If i_filename=
     {
       100_section := "run_docu"
@@ -1310,7 +1195,7 @@ class zclutil extends zclapp{
       If l_title="" OR i_nuevo="X"
         l_title := "##"
 
-      ;01.1 Elegir Filename
+      ;02.1 Elegir Filename
       If !WinExist(l_title)
       {
         this.winsel_100("","")
@@ -1321,11 +1206,11 @@ class zclutil extends zclapp{
     }
     Else
     {
-      ;01.2 Filename
+      ;02.2 Filename
       l_app := this.varget(i_filename,i_debug)
       this.vartitle(l_app,l_title,i_debug)
 
-      ;01.3 Abrir
+      ;02.3 Abrir
       If !WinExist(l_title)
       {
         this.run(i_filename,,,i_debug)
@@ -1333,21 +1218,21 @@ class zclutil extends zclapp{
       }
     }
 
-    ;02 Pegar
+    ;03. Pegar
     If WinExist(l_title)
     {
-      ;02.1 En fondo
+      ;03.1 En fondo
       If i_filename contains doc,
       {
         ControlSend _WwG1, ^v, %l_title%
         ControlSend _WwG1, {enter}, %l_title%
 
-        ;03 Mensaje
+        ;03.11 Mensaje
         ToolTip Documento actualizado en fondo `nVerIficar si se actualizo`nPuedes crear nuevos archivo usando las plantillas,800,500
         Sleep 2000
         ToolTip
       }
-      ;02.2 Activando
+      ;03.2 Activando
       Else{
         Winactivate %l_title%
         Winwaitactive %l_title%
@@ -1364,10 +1249,12 @@ class zclutil extends zclapp{
   ;----------------------------------------------------------------------;
   ; Winsel
   ;----------------------------------------------------------------------;
-  ;GUI WINDOW list
+  ;Winget 100
   winget_100(i_activate="x",i_paste=""){
 
   }
+
+  ;Winsel 100
   winsel_100(i_activate="x",i_paste=""){
     lt_win := this.winlist("OpusApp") ;Word
     lt_win := lt_win this.winlist("XLMAIN") ;Excel
@@ -1386,18 +1273,18 @@ class zclutil extends zclapp{
     SetTimer 100_close, 100
     Return
 
-    ;Eventos dynpro
+    ;01. Eventos dynpro
     100_listbox:
       If (A_GuiEvent <> "DoubleClick")
         Exit
     100_ok:
       Gui Submit, NoHide
 
-      ;Activar
+      ;01.1 Activar
       If i_activate<>
         Winactivate %100_wintitle%
 
-      ;Pegar en fondo
+      ;01.2 Pegar en fondo
       If i_paste<>
       {
         ControlSend _WwG1, {CtrlDown}{v}{CtrlUp}, %l_title%
@@ -1407,7 +1294,7 @@ class zclutil extends zclapp{
 
       IniWrite %100_wintitle%, %A_scriptini%, %100_section%, %100_key%
       Goto GuiClose
-    ;Return
+      ;Return
 
     100_close:
       zclutil.winA()
@@ -1424,7 +1311,7 @@ class zclutil extends zclapp{
     Return
   }
 
-  ;show
+  ;show tooltip
   showtooltip(i_message="Saved!!!"){
     ToolTip %i_message%
     Sleep 2000
@@ -1441,7 +1328,7 @@ class zclsap extends zclutil{
 
     this.abap_sync()
 
-    ;SQ02
+    ;01. SQ02
     Ifwinactive InfoSet
     {
       Send +{F6}
@@ -1449,9 +1336,11 @@ class zclsap extends zclutil{
       If errorlevel=0
         Send {enter}
       WinWaitActive InFormación,,5
-      Send {enter}
+      If errorlevel=0
+        Send {enter}
       WinWaitActive Visualizar log,,5
-      Send {enter}
+      If errorlevel=0
+        Send {enter}
     }
     Else
     {
@@ -1549,25 +1438,30 @@ class zclsap extends zclutil{
   abap_sync(){
     this.wina()
 
-    ;Determinar
+    ;01. Determinar
     If A_title contains YMT,
+    {
+      l_message = YMT se sincronizo
       l_file = D:\NT\Cloud\OneDrive\Ap\Src\ymt.txt
+    }
     If A_title contains YMR,
+    {
+      l_message = YMR se sincronizo
       l_file = D:\NT\Cloud\OneDrive\Ap\Src\Ym_old\ymr_omnia.txt
-    
+    }
     If l_file<>
     {
-      ;Copiar
+      ;01.1 Copiar
       Send ^a^c
       Sleep 1000
       Send ^{f3}
 
-      ;Guardar
+      ;01.2 Guardar
       FileDelete %l_file%
       FileAppend %clipboard%,%l_file%,UTF-8
 
-      ;Mensaje
-      this.showtooltip("YMX se sincronizo")
+      ;01.3 Mensaje
+      this.showtooltip(l_message)
       this.everything_setcount(l_file)
     }
   }
@@ -1577,11 +1471,11 @@ class zclsap extends zclutil{
 
     ;this.app_closelaunch()
 
-    l_dir_ym := this.varget("zym_logon")  ;Registro de empresas
+    l_dir_ym := this.varget("zym_logon") ;Registro de empresas
     ls_id := this.varget(i_name,i_debug)
     ls_id := this.keyclear(ls_id)
     ls_id := StrSplit(ls_id, A_space)
-    l_ambiente := ls_id[2]                ;dev,qas,prd,def,qaf,prf
+    l_ambiente := ls_id[2] ;dev,qas,prd,def,qaf,prf
 
     If i_debug<>
       msgbox %A_ThisFunc%: %l_dir_ym%-%l_ambiente%
@@ -1591,17 +1485,17 @@ class zclsap extends zclutil{
     ;----------------------------------------------------------;
     If l_ambiente not contains de,qa,pr,sn,ha
     {
-      ;1. Obtener ID de empresa, ambiente
-      id_empresa  := substr(ls_id[1], 1, 2)   ;DA
-      id_ambiente := substr(ls_id[1], 3, 1)   ;1,2,3 = dev,qas,prd
+      ;01.1 Obtener ID de empresa, ambiente
+      id_empresa := substr(ls_id[1], 1, 2) ;DA
+      id_ambiente := substr(ls_id[1], 3, 1) ;1,2,3 = dev,qas,prd
 
       If id_ambiente not in 1,2,3,4,5,6
       {
-        id_empresa  := substr(ls_id[1], 2, 2) ;DA
+        id_empresa := substr(ls_id[1], 2, 2) ;DA
         id_ambiente := substr(ls_id[1], 1, 1) ;1,2,3 = dev,qas,prd
       }
 
-      ;2. Leer registro de la empresa
+      ;01.2 Leer registro de la empresa
       Loop read, %l_dir_ym%,
       {
         ls_line := StrSplit(A_LoopReadLine, A_tab)
@@ -1609,51 +1503,51 @@ class zclsap extends zclutil{
           Break
       }
 
-      ;Obtener datos
-      l_empresa     := ls_line[1]   ;danper
-      l_vpn_active  := ls_line[3]   ;0 inactivo, 1 activo
-      l_vpn_sw      := ls_line[13]  ;forticlient, pulse
+      ;01.3 Obtener datos
+      l_empresa := ls_line[1] ;danper
+      l_vpn_active := ls_line[3] ;0 inactivo, 1 activo
+      l_vpn_sw := ls_line[13] ;forticlient, pulse
       If id_ambiente in 1
       {
         conexion_name = %l_empresa% dev
         mandt := ls_line[16]
-        user  := ls_line[5]
-        pass  := ls_line[6]
+        user := ls_line[5]
+        pass := ls_line[6]
       }
       If id_ambiente in 2
       {
         conexion_name = %l_empresa% qas
         mandt := ls_line[17]
-        user  := ls_line[7]
-        pass  := ls_line[8]
+        user := ls_line[7]
+        pass := ls_line[8]
       }
       If id_ambiente in 3
       {
         conexion_name = %l_empresa% prd
         mandt := ls_line[18]
-        user  := ls_line[9]
-        pass  := ls_line[10]
+        user := ls_line[9]
+        pass := ls_line[10]
       }
       If id_ambiente in 4
       {
         conexion_name = %l_empresa% def
         mandt := ls_line[16]
-        user  := ls_line[5]
-        pass  := ls_line[6]
+        user := ls_line[5]
+        pass := ls_line[6]
       }
       If id_ambiente in 5
       {
         conexion_name = %l_empresa% qaf
         mandt := ls_line[17]
-        user  := ls_line[7]
-        pass  := ls_line[8]
+        user := ls_line[7]
+        pass := ls_line[8]
       }
       If id_ambiente in 6
       {
         conexion_name = %l_empresa% prf
         mandt := ls_line[18]
-        user  := ls_line[9]
-        pass  := ls_line[10]
+        user := ls_line[9]
+        pass := ls_line[10]
       }
     }
     ;----------------------------------------------------------;
@@ -1661,15 +1555,26 @@ class zclsap extends zclutil{
     ;----------------------------------------------------------;
     Else
     {
-      ;1. Inicilizar
-      l_empresa   := ls_id[1] ;danper
+      ;01.4 Inicilizar
+      l_empresa := ls_id[1] ;danper
       id_ambiente := ls_id[2] ;dev,qas,prd
-      mandt       := ls_id[3] ;langu or mandt or tcode
-      user        := ls_id[4] ;user
-      pass        := ls_id[5] ;pass
+      l_opcion := ls_id[3] ;mandt or tcode or langu
+      user := ls_id[4] ;user
+      pass := ls_id[5] ;pass
       conexion_name = %l_empresa% %id_ambiente% ;danper dev
 
-      ;2. Leer registro de empresa
+      ;01.5 Mandt, Langu, Tcode
+      If strlen(l_opcion)=2
+        langu := l_opcion
+      Else If strlen(l_opcion)=3
+        mandt := l_opcion
+      Else
+        tcode := l_opcion
+
+      If i_debug<>
+        Msgbox %A_ThisFunc%: %langu%-%mandt%-%tcode%
+
+      ;01.6 Leer registro de empresa
       Loop read, %l_dir_ym%,
       {
         ls_line := StrSplit(A_LoopReadLine, A_tab)
@@ -1677,54 +1582,46 @@ class zclsap extends zclutil{
           Break
       }
 
-      ;3. Langu
-      If strlen(mandt)=2
-        langu := mandt ;langu
-      Else
-        langu := "es"
-
-      ;4. Vpn
-      l_vpn_active := ls_line[3]   ;0 inactivo, 1 activo
-      l_vpn_sw     := ls_line[13]  ;forticlient, pulse
-
-      ;5. Tcode
+      ;01.7 Mandt, User, Pass
       If user=
       {
-        tcode := mandt ;tcode
-
-        ;Mandante,user,pass
+        ;01.71 Mandante,user,pass
         If id_ambiente in dev
         {
           mandt := ls_line[16]
-          user  := ls_line[5]
-          pass  := ls_line[6]
+          user := ls_line[5]
+          pass := ls_line[6]
         }
         If id_ambiente in qas
         {
           mandt := ls_line[17]
-          user  := ls_line[7]
-          pass  := ls_line[8]
+          user := ls_line[7]
+          pass := ls_line[8]
         }
         If id_ambiente in prd
         {
           mandt := ls_line[18]
-          user  := ls_line[9]
-          pass  := ls_line[10]
+          user := ls_line[9]
+          pass := ls_line[10]
         }
       }
+
+      ;01.8 Vpn
+      l_vpn_active := ls_line[3] ;0 inactivo, 1 activo
+      l_vpn_sw := ls_line[13] ;forticlient, pulse
     }
 
-    ;ymt
-    If id_ambiente in dev
+    ;02. Tcode
+    If id_ambiente in 1,dev
       tcode := "ymt"
-    Else
+    Else If tcode = ""
       tcode := "smen"
 
-    ;Debug
+    ;03. Debug
     If i_debug<>
-      msgbox %A_ThisFunc%: %l_empresa%-%id_ambiente%-%mandt%-%user%-%pass%-%tcode%-%langu%
+      msgbox %A_ThisFunc%: %conexion_name%-%mandt%-%user%-%pass%-%tcode%-%langu%
 
-    ;Open VPN
+    ;04. Open VPN
     If (l_vpn_active = "1" and l_vpn_sw = "forticlient" and l_empresa <> A_vpn_sw)
     {
       A_vpn_sw = l_empresa
@@ -1738,11 +1635,11 @@ class zclsap extends zclutil{
       }
     }
 
-    ;Open SapLogon
+    ;05. Open SapLogon
     If conexion_name<>
       Run %comspec% /c start sapshcut.exe -type=Transaction -command=%tcode% -language=%langu% -maxgui -sysname="%conexion_name%" -system= -client=%mandt% -user=%user% -pw="%pass%" -reuse=1,,hide
 
-    ;Ventana de varias sesion
+    ;06. Ventana de varias sesion
     WinWait Info de licencia,,5
     If errorlevel = 0
     {
@@ -1753,18 +1650,18 @@ class zclsap extends zclutil{
       Send {tab}{up}
       Sleep 300
 
-      ;Dev
+      ;06.1 Dev
       If id_ambiente = 1
       {
-        ;Empresas no ingreso automatico
+        ;06.11 Empresas no ingreso automatico
         If id_empresa not contains cm,au,un,pi,pe
           Send {enter}
       }
 
-      ;Qas
+      ;06.2 Qas
       If id_ambiente = 2
       {
-        ;Empresas no ingreso automatico
+        ;06.21 Empresas no ingreso automatico
         If id_empresa not contains un,pi
           Send {enter}
       }
@@ -1773,11 +1670,11 @@ class zclsap extends zclutil{
     If this.ishs()
       Exit
   }
-  
+
   ;Logon file
-  logon_file(i_debug=""){
+  logon_file(){
     inicializa()
-    this.logon(A_filename,i_debug)
+    this.logon(A_filename)
     Exitapp
   }
 
@@ -1819,6 +1716,21 @@ class zclsap extends zclutil{
     Send %l_char%{up}%l_char%{up}%l_char%{up}{enter}
     Sleep 1500
     Send {f8}
+  }
+
+  ;Qas transport
+  qas_transport(){
+    Send ^{/}{tab 7}
+    Sleep 100
+    this.sendcopy("zomt_mandt2")
+    Sleep 100
+    Send {tab}
+    this.sendcopy("zomt_user2",i_noexit)
+    Sleep 100
+    Send {tab}
+    this.sendcopy("zomt_pass2",i_noexit)
+    Sleep 100
+    Send {enter}
   }
 
   ;Se38
@@ -1871,7 +1783,7 @@ class zclsap extends zclutil{
 
   ;Tcode complete
   tcode(i_tcode="",i_noexit="",i_button="",i_debug=""){
-    ;0. Inicializa
+    ;01. Inicializa
     l_control := this.wincontrol()
 
     If i_debug<>
@@ -1879,9 +1791,9 @@ class zclsap extends zclutil{
 
     ;1. Sleep for ^
     If A_thishotkey contains ^,
-      Sleep 350
+      Sleep 500
 
-    ;1. Para atajos de teclado y archivos
+    ;02. Para atajos de teclado y archivos
     If i_tcode not in enter,complete
     {
       Ifwinnotactive ahk_class SAP_FRONTEND_SESSION
@@ -1903,7 +1815,7 @@ class zclsap extends zclutil{
       ControlSend %i_control%, {enter}
     }
 
-    ;2. Autocomplete y enter
+    ;03. Autocomplete y enter
     Else If l_control contains Edit1,
     {
       Sleep 50
@@ -1922,14 +1834,14 @@ class zclsap extends zclutil{
       Send {enter}
     }
 
-    ;3. Enter
+    ;04. Enter
     Else If i_tcode=enter
     {
       Send {enter}
       Exit
     }
 
-    ;4. Version YMT
+    ;05. Version YMT
     If l_tcode contains ymt,
       this.ymt_version()
 
@@ -1938,7 +1850,7 @@ class zclsap extends zclutil{
 
     If i_noexit=
       If this.ishs()
-        Exit
+      Exit
   }
 
   ;Tcode with view
@@ -1946,7 +1858,7 @@ class zclsap extends zclutil{
     this.tcode(i_tcode,on)
     Sleep 2000
 
-    ;Dev
+    ;01. Dev
     this.winA()
     If A_title contains /1,/20
     {
@@ -1966,8 +1878,9 @@ class zclsap extends zclutil{
   tcode_file(i_noexit=""){
     inicializa()
     this.tcode(A_filename)
-    If i_noexit=
-      ExitApp
+    If i_noexit<>
+      Exit
+    ExitApp
   }
 
   ;Tcode with button
@@ -2012,7 +1925,7 @@ class zclsap extends zclutil{
 
   ;ymt version
   ymt_version(i_debug=""){
-    ;Get version sap
+    ;01. Get version sap
     Winwaitactive YMT,,3
     If errorlevel=0
     {
@@ -2021,7 +1934,7 @@ class zclsap extends zclutil{
       l_sap := lt_char[2]
       l_util := lt_char[3] + 1
 
-      ;YMT - Get file and compare
+      ;01.1 YMT - Get file and compare
       l_file := "D:\NT\Cloud\OneDrive\Ap\Src\ymt.txt"
       FileRead lt_code, %l_file%
       Loop Parse, lt_code, `n, `r
@@ -2043,7 +1956,7 @@ class zclsap extends zclutil{
         this.everything_setcount(l_file)
       }
 
-      ;UTIL - Get file and compare
+      ;01.2 UTIL - Get file and compare
       If l_util <> 1
       {
         l_file := "D:\ym\ZCL_UTIL.txt"
@@ -2067,13 +1980,13 @@ class zclsap extends zclutil{
 ;**********************************************************************
 class zcljob extends zclutil{
   inicializa_job(i_ymg){
-    ;settimer job_min, 60000
-    ;settimer job_hotcorner, 100
+    ;01. settimer job_min, 60000
+    ;02. settimer job_hotcorner, 100
 
     job_min:
       this.job_min(i_ymg)
     return
-    ; job_hotcorner:
+    ;03.  job_hotcorner:
     ;   this.job_hotcorner()
     ; return
   }
@@ -2081,64 +1994,180 @@ class zcljob extends zclutil{
   job_min(i_ymg){
     IfEqual a_min,00, MsgBox 4096,Hora,It's %a_hour%-----------------
 
-    ;Download
+    ;01. Download
     If (a_hour=13 and a_min=00)
       UrlDownloadToFile https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap, %i_ymg%
   }
+}
 
-  job_folderlog(i_folder,i_filereturn){
-    If i_folder=
-      Exit
-    txt := FileOpen(i_filereturn, "w")
-    txt.write()
-    txt.close()
+;**********************************************************************
+; Test
+;**********************************************************************
+class zcldev extends zclutil{
+  reenumerar_ahk(){
 
-    ;Leer versión de cada archivos abap
-    Loop Files, %i_folder%*%A_abapext%
-    {
-      ;Obtiene lineas
-      FileRead Text, %i_folder%%A_LoopFileName%
-      l_file := StrReplace(A_LoopFileName, A_abapext, "")
+    ;01. text
+    iniclas := "){,"
+    exclude := ";*,;;"
+    finclas := " }"
+    excludecode := "=,(,%,{,},sleep,;-,break,;;,exit,return"
+    comment := ";"
 
-      If l_file=ym_g
+    Send ^a^c
+    Sleep 1000
+
+    Loop parse, clipboard, `n,`r
+    { 
+      code := A_LoopField
+      code2 =
+
+      ;01.1 Identificador de tipo de linea
+      If code contains %iniclas%
       {
-        Loop Parse, Text, `n, `r
-          lines = %A_Index%
-        lines--
-        lines--
+        n1 := n2 := n3 := n4 := n5 := n6 := n7 := 0
+        enumerar = x
       }
+      Else if code in finclas
+        enumerar =
+      Else if code contains exclude,
+        enumerar := enumerar
+      Else if code contains %exclude%
+        enumerar =
+
+      ;01.2 Enumerar
+      if enumerar<>
+      {
+        if code contains %comment%
+        {
+          ;01.211 excluir si contiene linea de codigo
+          If code not contains %excludecode%
+          {
+            ;01.2111 separar comentario
+            ltline := strsplit(code,comment,,2)
+            blank := ltline[1]
+            blank2 := strreplace(blank,A_space)
+
+            ;01.2112 solo si inicia con ;
+            If blank2=
+            {
+              code2 := ltline[2]
+              numb := substr(code2,1,1)
+
+              ;01.21121 verificar si inicia con numeracion
+              If numb contains 0,1,2,3,4,5,6,7,8,9
+              {
+                ltline := strsplit(code2,A_space,,2)
+                code2 := ltline[2]
+              }
+
+              len := strlen(blank)
+
+              ;01.21122 Construir numeracion
+              switch len
+              {
+              case "2":
+                n1 := n2 := n3 := n4 := n5 := n6 := n7 := 0
+                code2 =
+              case "4":
+                n1 := n1 + 1
+                n2 := n3 := n4 := n5 := n6 := n7 := 0
+              case "6":
+                n2 := n2 + 1
+                n3 := n4 := n5 := n6 := n7 := 0
+                IF n1=0
+                  n1 := n1 + 1
+              case "8":
+                n3 := n3 + 1
+                n4 := n5 := n6 := n7 := 0
+                IF n1=0
+                  n1 := n1 + 1
+                IF n2=0
+                  n2 := n2 + 1
+              case "10":
+                n4 := n4 + 1
+                n5 := n6 := n7 := 0
+                IF n1=0
+                  n1 := n1 + 1
+                IF n2=0
+                  n2 := n2 + 1
+                IF n3=0
+                  n3 := n3 + 1
+              case "12":
+                n5 := n5 + 1
+                n6 := n7 := 0
+                IF n1=0
+                  n1 := n1 + 1
+                IF n2=0
+                  n2 := n2 + 1
+                IF n3=0
+                  n3 := n3 + 1
+                IF n4=0
+                  n4 := n4 + 1
+              case "14":
+                n6 := n6 + 1
+                n7 := 0
+                IF n1=0
+                  n1 := n1 + 1
+                IF n2=0
+                  n2 := n2 + 1
+                IF n3=0
+                  n3 := n3 + 1
+                IF n4=0
+                  n4 := n4 + 1
+                IF n5=0
+                  n5 := n5 + 1
+              case "16":
+                n7 := n7 + 1
+                IF n1=0
+                  n1 := n1 + 1
+                IF n2=0
+                  n2 := n2 + 1
+                IF n3=0
+                  n3 := n3 + 1
+                IF n4=0
+                  n4 := n4 + 1
+                IF n5=0
+                  n5 := n5 + 1
+                IF n6=0
+                  n6 := n6 + 1
+              default:
+              }
+
+              ;01.21123 Completar puntos & completar
+              num =
+              If n1>0
+              {
+                num := n1 "."
+                IF n1<10
+                  num := 0 num
+              }
+              IF n2>0
+                num := num n2
+              IF n3>0
+                num := num n3
+              IF n4>0
+                num := num n4
+              IF n5>0
+                num := num n5
+              IF n6>0
+                num := num n6
+              IF n7>0
+                num := num n7
+              IF num<>
+                code2 := blank comment num A_space code2
+            }
+          }
+        }
+      }
+
+      ;01.3 Contruir el txt
+      If code2<>
+        ltfile2 .= code2 "`n"
       Else
-        lines = 100000
-
-      l_version=
-      Loop Parse, Text, `n, `r
-      {
-        If A_Index = 5
-          l_version = %A_LoopField%
-        If A_Index = %lines%
-          l_version = %A_LoopField%
-      }
-      ;Escribir txt
-      FileAppend %l_file%%A_Tab%%l_version%`n, %i_filereturn%
-    }
-  }
-
-  job_folderjson(i_folder,i_py){
-    If i_folder=
-      Exit
-
-    ;EnvSub L_Now, A_Now [, TimeUnits]
-
-    ;Leer versión de cada archivos abap
-    Loop Files, %i_folder%*%A_abapext%
-    {
-      ;Obtiene lineas
-      FileGetTime l_time, %i_folder%%A_LoopFileName%, M
-      ;FormatTime, l_time [, YYYYMMDDHH24MISS, Format]
-      ;msgbox %l_time%
+        ltfile2 .= A_LoopField "`n"
     }
 
-    ;If l_json<>
-    ;  Run %comspec% %i_py%
+    clipboard := ltfile2
+    Send ^v
   }
 }
