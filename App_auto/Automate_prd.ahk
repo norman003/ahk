@@ -251,10 +251,16 @@ class zclutil{
 
     If i_var<>
     {
-      ;01.1 Leer variable de archivos ini
-      if i_var in %G_autovar%
+      ;ver si es global
+      if i_var contains A_,
         r_value = % %i_var%
-      Else if i_var in %G_sapvar%
+      
+      ;01.1 ver si esta en lista
+      else if i_var in %G_autovar%
+        r_value = % %i_var%
+      
+      ;ver si es sap - leer ini
+      else if i_var in %G_sapvar%
       {
         iniread r_value, %A_sapini%, data, %i_var%
         r_value := strreplace(r_value,"Ã³","ó")
@@ -273,9 +279,10 @@ class zclutil{
 
   ;Variable - get title
   vartitleget(byref l_app, byref l_title,i_debug){
+    ;Inicializa
     l_title :=
 
-    ;1. Sino tiene titulo (debe estar concatenado con ~)
+    ;1. Get titulo concatenado ~|
     If l_app contains ~,|,
     {
       lt_line := StrSplit(l_app,"~")
@@ -283,7 +290,7 @@ class zclutil{
       l_title := lt_line[2]
     }
 
-    ;2. Sino tiene titulo (obtener de la extension .ext)
+    ;2. Sino obtener extension
     If l_title=
     {
       SplitPath l_app,l_title2,l_dir,l_extension,l_title
@@ -468,7 +475,7 @@ class zclutil{
       ;Return
 
     100_close:
-      zclapp.winA()
+      zclprd.winA()
       If A_title <> %100_section%
       {
         SetTimer 100_close,off
@@ -1847,21 +1854,21 @@ class zclqas extends zclprd{
       {
         if code contains %comment%
         {
-          ;01.211 excluir si contiene linea de codigo
+          ;01.211. excluir si contiene linea de codigo
           If code not contains %excludecode%
           {
-            ;01.2111 separar comentario
+            ;01.211.1 separar comentario
             ltline := strsplit(code,comment,,2)
             blank := ltline[1]
             blank2 := strreplace(blank,A_space)
 
-            ;01.2112 solo si inicia con ;
+            ;01.211.2 solo si inicia con ;
             If blank2=
             {
               code2 := ltline[2]
               numb := substr(code2,1,1)
 
-              ;01.21121 verificar si inicia con numeracion
+              ;01.211.21 verificar si inicia con numeracion
               If numb contains 0,1,2,3,4,5,6,7,8,9
               {
                 ltline := strsplit(code2,A_space,,2)
@@ -1870,7 +1877,7 @@ class zclqas extends zclprd{
 
               len := strlen(blank)
 
-              ;01.21122 Construir numeracion
+              ;01.211.22 Construir numeracion
               switch len
               {
               case "2":

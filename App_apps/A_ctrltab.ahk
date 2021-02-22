@@ -1,4 +1,4 @@
 ﻿#NoTrayIcon
 
 #Include %A_scriptdir%\..\automate_inc.ahk
-zclapp.run_file("","","40")
+zclprd.run_file("","","40")
