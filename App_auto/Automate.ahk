@@ -7,7 +7,6 @@ GroupAdd gr_launcher_app, ahk_exe switcheroo.exe
 GroupAdd gr_sap_debug, debugging
 GroupAdd gr_sap_debug, debugger
 go.snipasteauto_ticket()
-^!a::Reload
 #v::go.sound_toogle()
 #ESC::go.run("zomt_logon0")
 #F1::go.sap.logon("zomt_logon1")

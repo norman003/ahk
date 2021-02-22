@@ -190,7 +190,7 @@ class zclutil{
     l_cliptemp =
 
     ;03. key after
-    If l_key_after<>
+    If i_key_after<>
       Send {%i_key_after%}
 
     ;04. no salir
@@ -273,6 +273,8 @@ class zclutil{
 
   ;Variable - get title
   vartitleget(byref l_app, byref l_title,i_debug){
+    l_title :=
+
     ;1. Sino tiene titulo (debe estar concatenado con ~)
     If l_app contains ~,|,
     {
@@ -576,6 +578,8 @@ class zclprd{
   ; Everything
   ;----------------------------------------------------------------------;
   everything_setcount(i_filename,i_getinstance="",i_debug=""){
+    instance:=
+
     ;01. Valid
     If i_filename contains :\,
     {
@@ -1304,7 +1308,7 @@ class zclsap{
 
   ;Logon Sap
   logon(i_name,i_debug=""){
-    local langu:="es",l_empresa,l_vpn_active,l_vpn_sw
+    local langu:="es",l_empresa,l_vpn_active,l_vpn_sw,tcode
 
     l_dir_ym := ui.varmemoryget("zym_logon") ;Registro de empresas
     ls_id := ui.varmemoryget(i_name,i_debug)
