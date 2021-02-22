@@ -1,7 +1,7 @@
 ﻿#NoTrayIcon
 
+#Include %A_scriptdir%\..\automate_inc.ahk
 app=%1%
-inicializa()
+;inicializa()
 zclapp.run(app)
 Exitapp
-#Include %A_scriptdir%\..\automate_inc.ahk

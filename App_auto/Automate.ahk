@@ -6,15 +6,8 @@ GroupAdd gr_launcher_hs, ahk_exe everything.exe
 GroupAdd gr_launcher_app, ahk_exe switcheroo.exe
 GroupAdd gr_sap_debug, debugging
 GroupAdd gr_sap_debug, debugger
-inicializa()
-inicializa(){
-A_automate_dir = D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\
-go := {base: new zclutil(), sap: new zclsap(), job: new zcljob(), dev: new zcldev()}
-go.varglobal("D:\nt\cloud\OneDrive\Ap\Apps\Ahk\App_omnia\omt.ini")
-go.varglobal("files\automate.ini")
 go.snipasteauto_ticket()
-}
-^!z::Reload
+^!a::Reload
 #v::go.sound_toogle()
 #ESC::go.run("zomt_logon0")
 #F1::go.sap.logon("zomt_logon1")
@@ -46,6 +39,7 @@ return
 !8::go.word_resize("80")
 !9::go.word_resize("90")
 F3::Send ^f
+~^v::go.word_resize_paste()
 #IfWinActive ahk_exe wps.exe
 ^Left::Send ^+{tab}
 ^Right::Send ^{tab}
@@ -53,7 +47,7 @@ F3::Send ^f
 !enter::Send {enter}
 F4::Send ^{a}!{i}!{pgdn}
 #IfWinActive .ahk
-^!f::go.dev.reenumerar_ahk()
+^!f::go.reenumerar_ahk()
 #IfWinActive ahk_exe Code.exe
 F4::Send ^+{o}
 +F4::Send ^+{p}
@@ -237,7 +231,7 @@ Sleep 100
 Send !{esc}
 return
 #IfWinActive ahk_class #32770
-~enter::go.enter_32770()
+~enter::go.32770_enter()
 #IfWinActive /000 SAP
 !q::go.sap.qas_transport()
 #IfWinActive ahk_group Gr_sap_debug

@@ -1,2 +1,2 @@
-﻿zclsap.logon_file()
-#Include D:\nt\cloud\OneDrive\Ap\Apps\Ahk\App_auto\Automate.ahk
+﻿#Include %A_scriptdir%\..\..\..\automate_inc.ahk
+zclsap.logon_file()

@@ -1,2 +1,2 @@
-﻿zclsap.logon_file()
-#Include %A_scriptdir%\..\..\..\automate_inc.ahk
+﻿#Include %A_scriptdir%\..\..\..\automate_inc.ahk
+zclsap.logon_file()

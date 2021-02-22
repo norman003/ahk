@@ -1,17 +1,9 @@
 
 class zcldev{
 
-  se80(){
-    zclsap.tcode("se80")
-    winwait Object Navigator,,5 
-    Send +{F5}
-    winwait Selec.objeto,,3
-    Send {space}{down}{enter}+{home}
-  }
-
   ;Key spanish replace
   keyspanish(in,out){
-    this.winA()
+    ui.wina()
     
       ;Validar lenguaje de teclado spanish
       ;Validar lenguaje de windows
@@ -31,10 +23,10 @@ class zcldev{
   ;Read ini from script
   iniread_script(i_script,i_section,i_key){
     ;Script
-    l_scriptini := this.scriptini(i_script)
+    l_scriptini := ui.scriptini(i_script)
   
     ;Clear key
-    l_key := this.keyname(i_key)
+    l_key := ui.keyname(i_key)
   
     ;ReadFile Ini
     IniRead r_value, %l_scriptini%, %i_section%, %l_key%
@@ -49,32 +41,13 @@ class zcldev{
   ;Write ini of script
   iniwrite_script(i_script,i_section,i_key,i_value){
     ;Script
-    l_scriptini := this.scriptini(i_script)
+    l_scriptini := ui.scriptini(i_script)
   
     ;Clear key
-    l_key := this.keyname(i_key)
+    l_key := ui.keyname(i_key)
   
     ;WriteFile Ini
     IniWrite %i_value%, %l_scriptini%, %i_section%, %l_key%
-  }
-
-  job_hotcorner(){
-    CoordMode Mouse, Screen
-    MouseGetPos x,y,id,
-    WinGetTitle title, ahk_id %id%
-
-    ;MsgBox, %x%,%y%,%A_ScreenHeight%
-    If title=Norman_box
-    {
-      MouseMove %x%,30
-      Winactivate Norman_box ;Send {|}
-    }
-    Else If (x=0 And y=A_ScreenHeight-1)
-    {
-      y := y-30
-      MouseMove %x%,%y%
-      Send !{tab}
-    }
   }
 
   menu(){
@@ -173,102 +146,6 @@ class zcldev{
     UrlDownloadToFile %l%, D:\a.xls
   }
 
-    transport(){
-    Send ^{/}{tab 7}
-    Sleep 100
-    this.sendcopy("zomt_mandt2")
-    Sleep 100
-    Send {tab}
-    this.userpass("2","")
-  }
-  userpass(i_id,i_noexit="x"){
-    If i_id=1
-    {
-      this.sendcopy("zomt_user1",i_noexit)
-      Sleep 100
-      Send {tab}
-      this.sendcopy("zomt_pass1",i_noexit)
-    }
-    If i_id=2
-    {
-      this.sendcopy("zomt_user2",i_noexit)
-      Sleep 100
-      Send {tab}
-      this.sendcopy("zomt_pass2",i_noexit)
-    }
-    If i_id=3
-    {
-      this.sendcopy("zomt_user3",i_noexit)
-      Sleep 100
-      Send {tab}
-      this.sendcopy("zomt_pass3",i_noexit)
-    }
-    Sleep 100
-    Send {enter}
-    Exit
-  }
-}
-
-class zcljob{
-  job_folderlog(i_folder,i_filereturn){
-    If i_folder=
-      Exit
-    txt := FileOpen(i_filereturn, "w")
-    txt.write()
-    txt.close()
-
-    ;Leer versión de cada archivos abap
-    Loop Files, %i_folder%*%A_abapext%
-    {
-      ;Obtiene lineas
-      FileRead Text, %i_folder%%A_LoopFileName%
-      l_file := StrReplace(A_LoopFileName, A_abapext, "")
-
-      If l_file=ym_g
-      {
-        Loop Parse, Text, `n, `r
-          lines = %A_Index%
-        lines--
-        lines--
-      }
-      Else
-        lines = 100000
-
-      l_version=
-      Loop Parse, Text, `n, `r
-      {
-        If A_Index = 5
-          l_version = %A_LoopField%
-        If A_Index = %lines%
-          l_version = %A_LoopField%
-      }
-      ;Escribir txt
-      FileAppend %l_file%%A_Tab%%l_version%`n, %i_filereturn%
-    }
-  }
-
-  job_folderjson(i_folder,i_py){
-    If i_folder=
-      Exit
-
-    ;EnvSub L_Now, A_Now [, TimeUnits]
-
-    ;Leer versión de cada archivos abap
-    Loop Files, %i_folder%*%A_abapext%
-    {
-      ;Obtiene lineas
-      FileGetTime l_time, %i_folder%%A_LoopFileName%, M
-      ;FormatTime, l_time [, YYYYMMDDHH24MISS, Format]
-      ;msgbox %l_time%
-    }
-
-    ;If l_json<>
-    ;  Run %comspec% %i_py%
-  }
-
-}
-
-class outlook{
   ;Outlook set category
   outlook_category(i_title,i_tag,i_appcategory){
     this.outlook_categoryset(i_appcategory)
@@ -293,9 +170,29 @@ class outlook{
     Send ^q
     Send %i_appcategory%
   }
-}
 
-class zclapp{
+  ;Datos: App,Mouse,Key con Id del mouse
+  winmouse(i_debug=""){
+    CoordMode Mouse, Screen
+
+    ;01. Datos: con Id de app
+    MouseGetPos A_x, A_y, A_id, A_control
+    WinGetClass A_class, ahk_id %A_id%
+    WinGetTitle A_title, ahk_id %A_id%
+    WinGet A_exe, Processname, ahk_id %A_id%
+    ;PixelGetColor A_color, %x%, %y%
+    ;WinGetPos A_x, A_y, A_ancho, A_alto, %A_id%
+    ;A_x+=x
+    ;A_y+=y
+
+    A_key := ui.keyclear()
+    A_keyname := ui.keyname()
+
+    If i_debug<>
+      Msgbox %A_ThisFunc%: %A_exe%-%A_class%-%A_control%-%A_title%
+  }
+
+
   ;----------------------------------------------------------------------;
   ; Wheel
   ;----------------------------------------------------------------------;
@@ -402,5 +299,314 @@ class zclapp{
     ;3 Para todos en general
     Send {%A_key%}
     Exit
+  }
+  
+  ;Detener rapidez
+  isWheel(){
+    If A_ThisHotkey not contains WheelLeft,WheelRight
+      return false
+    If ((A_PriorHotkey=A_ThisHotkey) AND (A_TimeSincePriorHotkey<200))
+      return true
+    return false
+  }
+
+
+  ;App close process
+  app_closeprocess(){
+    ui.winmouse()
+    A_key := ui.keyclear()
+
+    If A_control=MSTaskListWClass1
+    {
+      Send {RButton}
+      Winwait Windows.UI.core.corewindow,,2
+      Send {Up}{Enter}
+    }
+    else If A_exe=tlbHost.exe
+      Send {%A_key%}
+    else If A_exe=saplogon.exe
+      go.sap.tcode("/nex")
+    else If A_class=CabinetWClass
+    {
+      WinGet lt_win,List,ahk_class %A_class%
+      Loop %lt_win%
+      {
+        A_id := lt_win%A_Index%
+        WinGetClass A_class, ahk_id %A_id%
+        Winclose ahk_class %A_class%
+      }
+    }
+    Else
+      Send !{f4}
+  }
+
+
+  ;App close auto
+  app_closeauto(){
+    WinKill ahk_exe tlbHost.exe
+    ExitApp
+  }
+
+
+  ;App close no basic
+  app_closenobasic(){
+    For index, ls_close in lt_close
+    {
+      If ls_close contains excel
+      {
+        Winactivate %ls_close%
+        WinWaitActive %ls_close%,,3
+        Send ^{w}
+      }
+      Else
+      {
+        WinGet lt_win,List, %ls_close%
+        Loop %lt_win%
+        {
+          A_id := lt_win%A_Index%
+          WinGetClass A_class, ahk_id %A_id%
+          Winclose ahk_class %A_class%
+        }
+      }
+    }
+  }
+
+  ;App close launch
+  app_closelaunch(){
+    IfWinActive ahk_exe Listary.exe
+      Send {esc}
+    IfWinActive ahk_exe SearchApp.exe
+      Send {esc}
+    IfWinActive ahk_exe Everything.exe
+      Send {esc}
+    IfWinActive ahk_exe switcheroo.exe
+      Send {esc}
+  }
+
+
+  ;App Esc
+  app_esc(i_opcion=""){
+    If i_opcion=up
+    {
+      Send !+{esc}
+      Winactivate A
+    }
+    Else
+    {
+      If ui.iswinactivetab("gt2_esc")
+        Send {esc}
+      Else
+      {
+        Send !{esc}
+        Winactivate A
+      }
+    }
+  }
+
+  ;App For Esc
+  app_for_esc(i_key){
+    If ui.iswinactivetab("gt2_esc")
+      Send {esc}
+    Else
+      this.run(i_key)
+  }
+
+  ;Contiene en list de memoria
+  iscontainslist(i_var,it_tab){
+    l_list = % %it_tab%_
+
+    If i_var contains %l_list%
+      return true
+    return false
+  }
+
+  ;Esta en list de memoria
+  isinlist(i_var,it_tab){
+    l_list = % %it_tab%_
+
+    If i_var in %l_list%
+      return true
+    return false
+  }
+
+
+  ;Send keyword
+  sendk(i_word){
+    Send +{home}
+    ui.sendcopy(i_word)
+  }
+
+  ;Send raw
+  sendraw(val,i_debug=""){
+    val := ui.varmemoryget(val,i_debug)
+    sendraw %val%
+
+    If ui.ishs()
+      Exit
+  }
+
+  edit_snippet(){
+    ;01. copy selection
+    clipboard=
+    Send ^c
+
+    ;01. select and copy
+    If clipboard=
+      Send ^{right}^+{left}^c
+
+    ;02. open sublime
+    this.run("A_sublime")
+
+    ;03. open file
+    Send ^p
+    Sleep 200
+    Send ^v ;{enter}
+  }
+}
+
+
+class zcljob2{
+
+  job_hotcorner(){
+    CoordMode Mouse, Screen
+    MouseGetPos x,y,id,
+    WinGetTitle title, ahk_id %id%
+
+    ;MsgBox, %x%,%y%,%A_ScreenHeight%
+    If title=Norman_box
+    {
+      MouseMove %x%,30
+      Winactivate Norman_box ;Send {|}
+    }
+    Else If (x=0 And y=A_ScreenHeight-1)
+    {
+      y := y-30
+      MouseMove %x%,%y%
+      Send !{tab}
+    }
+  }
+  
+  job_folderlog(i_folder,i_filereturn){
+    If i_folder=
+      Exit
+    txt := FileOpen(i_filereturn, "w")
+    txt.write()
+    txt.close()
+
+    ;Leer versión de cada archivos abap
+    Loop Files, %i_folder%*%A_abapext%
+    {
+      ;Obtiene lineas
+      FileRead Text, %i_folder%%A_LoopFileName%
+      l_file := StrReplace(A_LoopFileName, A_abapext, "")
+
+      If l_file=ym_g
+      {
+        Loop Parse, Text, `n, `r
+          lines = %A_Index%
+        lines--
+        lines--
+      }
+      Else
+        lines = 100000
+
+      l_version=
+      Loop Parse, Text, `n, `r
+      {
+        If A_Index = 5
+          l_version = %A_LoopField%
+        If A_Index = %lines%
+          l_version = %A_LoopField%
+      }
+      ;Escribir txt
+      FileAppend %l_file%%A_Tab%%l_version%`n, %i_filereturn%
+    }
+  }
+
+  job_folderjson(i_folder,i_py){
+    If i_folder=
+      Exit
+
+    ;EnvSub L_Now, A_Now [, TimeUnits]
+
+    ;Leer versión de cada archivos abap
+    Loop Files, %i_folder%*%A_abapext%
+    {
+      ;Obtiene lineas
+      FileGetTime l_time, %i_folder%%A_LoopFileName%, M
+      ;FormatTime, l_time [, YYYYMMDDHH24MISS, Format]
+      ;msgbox %l_time%
+    }
+
+    ;If l_json<>
+    ;  Run %comspec% %i_py%
+  }
+
+}
+
+
+class zclsap2{
+  ;Se38
+  se38(i_program,i_ucomm="f8"){
+    this.tcode("se38",on)
+
+    WinWaitactive Editor ABAP: Imagen inicial
+    ui.sendcopy(i_program)
+
+    Send {%i_ucomm%}
+
+    If ui.ishs()
+      Exit
+  }
+
+  ;Se38 file
+  se38_file(i_ucomm="f8"){
+    ;inicializa()
+    this.se38(A_filename,i_ucomm)
+    Exitapp
+  }
+
+  ;Se38 fileedit
+  se38_fileedit(){
+    Winactivate ahk_class SAP_FRONTEND_SESSION
+    ui.winA()
+
+    If A_title contains 250,
+      this.se38_file("f7")
+    else
+      this.se38_file("f6")
+    Exitapp
+  }
+
+  ;Se38 POOL
+  se38pool(i_file,i_filename){
+    l_title := ui.keyclear(i_filename) A_abapext
+    FileRead Clipboard, %i_file%%l_title%
+    this.se38("ZOSTB_CONSTANTES1")
+    If ui.ishs()
+      Exit
+  }
+
+  ;Se38 file
+  se38pool_file(){
+    ;inicializa()
+    this.se38pool(A_filename)
+    Exitapp
+  }
+
+  ;Tratar objeto
+  tratarobjeto(){
+    Winwait Buscar variante,,4
+    If errorlevel=0
+      Send {f8}
+  }
+
+
+  se80(){
+    zclsap.tcode("se80")
+    winwait Object Navigator,,5 
+    Send +{F5}
+    winwait Selec.objeto,,3
+    Send {space}{down}{enter}+{home}
   }
 }

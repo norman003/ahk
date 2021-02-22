@@ -1,5 +1,5 @@
-﻿inicializa()
-ticket := go.varget("zomt_ticket")
+﻿;inicializa()
+ticket := ui.varmemoryget("zomt_ticket")
 url = http://osss.omniasolution.com:8093/Ticket/GestionarTicketAdmin?tick=%ticket%
 winactivate GestionarTicketAdmin
 run chrome.exe %url%

@@ -1,5 +1,6 @@
 ﻿#NoTrayIcon
 
+#Include %A_scriptdir%\..\automate_inc.ahk
 alt := GetKeyState("Alt")
 ctrl := GetKeyState("Ctrl")
 
@@ -10,4 +11,3 @@ Else If ctrl=1
 Else
   zclapp.run_file("A_alttab","","40")
       
-#Include %A_scriptdir%\..\automate_inc.ahk

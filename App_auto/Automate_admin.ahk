@@ -6,16 +6,9 @@ GroupAdd gr_launcher_hs, ahk_exe everything.exe
 GroupAdd gr_launcher_app, ahk_exe switcheroo.exe
 GroupAdd gr_sap_debug, debugging
 GroupAdd gr_sap_debug, debugger
-inicializa()
-inicializa(){
-A_automate_dir = D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\
-go := {base: new zclutil(), sap: new zclsap(), job: new zcljob(), dev: new zcldev()}
-go.varglobal("D:\nt\cloud\OneDrive\Ap\Apps\Ahk\App_omnia\omt.ini")
-go.varglobal("files\automate.ini")
 go.snipasteauto_ticket()
-}
 :*:;;::
-go.sendcopy("ñ","","backspace")
+ui.sendcopy("ñ","","backspace")
 ::"I::
 ::"E::
 ::"U::
@@ -25,21 +18,21 @@ go.sap.abap_commentline(A_thislabel,"NTP",zomt_ticket)
 ::*U::
 go.sap.abap_commentblock(A_thislabel,"NTP",zomt_ticket)
 :*:nn::
-go.sendcopy("zomt_ticket")
+ui.sendcopy("zomt_ticket")
 :*:n1::
-go.sendcopy("zomt_desc2")
+ui.sendcopy("zomt_desc2")
 :*:n2::
-go.sendcopy("zomt_desc3")
+ui.sendcopy("zomt_desc3")
 :*:n3::
-go.sendcopy("zomt_desc4")
+ui.sendcopy("zomt_desc4")
 :*:d1::
-go.sendcopy("A_day_en")
+ui.sendcopy("A_day_en")
 :*:d2::
-go.sendcopy("A_day")
+ui.sendcopy("A_day")
 :*:d3::
-go.sendcopy("A_day2_en")
+ui.sendcopy("A_day2_en")
 :*:d4::
-go.sendcopy("A_day2")
+ui.sendcopy("A_day2")
 ^!a::Reload
 $ESC::go.app_close()
 ^`::go.run_docu("","x")

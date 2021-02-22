@@ -1,5 +1,6 @@
 ﻿#NoTrayIcon
 
+#Include %A_scriptdir%\..\automate_inc.ahk
 alt := GetKeyState("Alt")
 ctrl := GetKeyState("Ctrl")
 
@@ -9,4 +10,3 @@ Else If ctrl=1
   msgbox customizar
 Else
   zclapp.run_file("","1")
-#Include %A_scriptdir%\..\automate_inc.ahk

@@ -1,2 +1,2 @@
-﻿zclsap.tcode_file()
-#Include %A_scriptdir%\..\..\..\automate_inc.ahk
+﻿#Include %A_scriptdir%\..\..\..\automate_inc.ahk
+zclsap.tcode_file()

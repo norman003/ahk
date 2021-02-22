@@ -1,5 +1,5 @@
-﻿inicializa()
-ticket := go.varget("zomt_ticket")
+﻿;inicializa()
+ticket := ui.varmemoryget("zomt_ticket")
 url = https://osss.omniasolution.com:8090/en/#/inicio/ticket/%ticket%
 winactivate Omnia Solution Services Support
 ;run chrome.exe %url%
