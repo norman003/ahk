@@ -7,7 +7,8 @@
 #SingleInstance Force ;Una sola ejecución
 #Persistent ;Mantiene en ejecución
 #MaxHotkeysPerInterval 500 ;Max press hotkey
-FileEncoding UTF-8
+FileEncoding UTF-8 ;Default
+SetNumLockState AlwaysOn ;Activar siempre numlock
 
 ;**********************************************************************
 ; Global
@@ -27,7 +28,7 @@ Global A_lastclass, A_lasttitle, A_lastexe, A_lastid
 Global G_autovar:=, G_sapvar:=
 
 ;Sap
-Global A_vpn_sw
+Global A_vpn_sw:=
 
 ;Window
 Global 100_section, 100_key, 100_wintitle
@@ -1315,7 +1316,7 @@ class zclsap{
 
   ;Logon Sap
   logon(i_name,i_debug=""){
-    local langu:="es",l_empresa,l_vpn_active,l_vpn_sw,tcode
+    local langu:="es",l_empresa,l_vpn_active,l_vpn_sw,tcode:=
 
     l_dir_ym := ui.varmemoryget("zym_logon") ;Registro de empresas
     ls_id := ui.varmemoryget(i_name,i_debug)
@@ -1565,7 +1566,7 @@ class zclsap{
   }
 
   ;Qas transport
-  qas_transport(){
+  qas_transport(i_noexit="x"){
     Send ^{/}{tab 7}
     Sleep 100
     ui.sendcopy("zomt_mandt2")
