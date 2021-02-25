@@ -7,11 +7,11 @@ class zcldev{
     
       ;Validar lenguaje de teclado spanish
       ;Validar lenguaje de windows
-    IF A_langu_es<>
+    IF G_langu_es<>
     {
-    If A_class in wndclass_desked_gsk,borrarentrada ;Excepcion Editor de macro excel
+    If G_class in wndclass_desked_gsk,borrarentrada ;Excepcion Editor de macro excel
       Send ^{%in%}
-    Else If A_exe in winword.exe,excel.exe,mspaint.exe,notepad.exe,explorer.exe,outlook.exe ;,OneNote
+    Else If G_exe in winword.exe,excel.exe,mspaint.exe,notepad.exe,explorer.exe,outlook.exe ;,OneNote
       Send ^{%out%}
     Else 
       Send ^{%in%}
@@ -176,20 +176,20 @@ class zcldev{
     CoordMode Mouse, Screen
 
     ;01. Datos: con Id de app
-    MouseGetPos A_x, A_y, A_id, A_control
-    WinGetClass A_class, ahk_id %A_id%
-    WinGetTitle A_title, ahk_id %A_id%
-    WinGet A_exe, Processname, ahk_id %A_id%
-    ;PixelGetColor A_color, %x%, %y%
-    ;WinGetPos A_x, A_y, A_ancho, A_alto, %A_id%
-    ;A_x+=x
-    ;A_y+=y
+    MouseGetPos G_x, G_y, G_id, G_control
+    WinGetClass G_class, ahk_id %G_id%
+    WinGetTitle G_title, ahk_id %G_id%
+    WinGet G_exe, Processname, ahk_id %G_id%
+    ;PixelGetColor G_color, %x%, %y%
+    ;WinGetPos G_x, G_y, G_ancho, G_alto, %G_id%
+    ;G_x+=x
+    ;G_y+=y
 
-    A_key := ui.keyclear()
-    A_keyname := ui.keyname()
+    G_key := ui.keyclear()
+    G_keyname := ui.keyname()
 
     If i_debug<>
-      Msgbox %A_ThisFunc%: %A_exe%-%A_class%-%A_control%-%A_title%
+      Msgbox %A_ThisFunc%: %G_exe%-%G_class%-%G_control%-%G_title%
   }
 
 
@@ -203,14 +203,14 @@ class zcldev{
 
     this.winmouse()
 
-    If A_class=MultitaskingViewFrame
+    If G_class=MultitaskingViewFrame
     {
-      If A_keyname contains WheelRight,
+      If G_keyname contains WheelRight,
         send {blind}{left}
       Else
         send {blind}{right}
     }
-    Else If A_exe = switcheroo.exe
+    Else If G_exe = switcheroo.exe
       Send {Click}
     Else
       Send !{tab}
@@ -224,9 +224,9 @@ class zcldev{
 
     this.winmouse()
 
-    If A_class=MultitaskingViewFrame
+    If G_class=MultitaskingViewFrame
       send {blind}{click}
-    Else If A_keyname contains WheelRight,
+    Else If G_keyname contains WheelRight,
       Send !+{esc}
     Else
       Send !{esc}
@@ -240,23 +240,23 @@ class zcldev{
 
     this.winmouse()
 
-    If A_class in Chrome_WidgetWin_1
+    If G_class in Chrome_WidgetWin_1
     {
-      If A_keyname contains wheelright,ctrlshIft
+      If G_keyname contains wheelright,ctrlshIft
         Send ^{pgup}
       Else
         Send ^{pgdn}
     }
-    Else If A_class in DSUI:PDFXCViewer,QWidget
+    Else If G_class in DSUI:PDFXCViewer,QWidget
     {
-      If A_keyname contains wheelright,ctrlshIft
+      If G_keyname contains wheelright,ctrlshIft
         Send ^+{tab}
       Else
         Send ^{tab}
     }
     Else
     {
-      If A_keyname contains wheelright,ctrlshIft
+      If G_keyname contains wheelright,ctrlshIft
         Send #{\}
       Else
         Send #^{\}
@@ -270,26 +270,26 @@ class zcldev{
 
     ;1 Click
     ;1.1. Control - list
-    If this.iscontainslist(A_control,"gtc1_scroll")
+    If this.iscontainslist(G_control,"gtc1_scroll")
       Send {Click}
 
     ;1.2. Control - contains
-    Else If this.iscontainslist(A_control,"gtc2_scroll")
+    Else If this.iscontainslist(G_control,"gtc2_scroll")
       Send {Click 2}
 
     ;2. Casos especiales
     ;2.1 Sap - Title
-    If A_title contains variantes,
+    If G_title contains variantes,
       Send {Click 2}
 
     ;2.3 Switchero
-    Else If A_exe = switcheroo.exe
+    Else If G_exe = switcheroo.exe
       Send {Click 2}
 
     ;2.4 Taskbar
-    Else If A_class = Shell_TrayWnd
+    Else If G_class = Shell_TrayWnd
     {
-      If A_control=TrayNotIfyWnd1
+      If G_control=TrayNotIfyWnd1
         Send #{d}
       Else
         Send ^{click}
@@ -297,7 +297,7 @@ class zcldev{
     Else
 
     ;3 Para todos en general
-    Send {%A_key%}
+    Send {%G_key%}
     Exit
   }
   
@@ -314,26 +314,26 @@ class zcldev{
   ;App close process
   app_closeprocess(){
     ui.winmouse()
-    A_key := ui.keyclear()
+    G_key := ui.keyclear()
 
-    If A_control=MSTaskListWClass1
+    If G_control=MSTaskListWClass1
     {
       Send {RButton}
       Winwait Windows.UI.core.corewindow,,2
       Send {Up}{Enter}
     }
-    else If A_exe=tlbHost.exe
-      Send {%A_key%}
-    else If A_exe=saplogon.exe
+    else If G_exe=tlbHost.exe
+      Send {%G_key%}
+    else If G_exe=saplogon.exe
       go.sap.tcode("/nex")
-    else If A_class=CabinetWClass
+    else If G_class=CabinetWClass
     {
-      WinGet lt_win,List,ahk_class %A_class%
+      WinGet lt_win,List,ahk_class %G_class%
       Loop %lt_win%
       {
-        A_id := lt_win%A_Index%
-        WinGetClass A_class, ahk_id %A_id%
-        Winclose ahk_class %A_class%
+        G_id := lt_win%A_Index%
+        WinGetClass G_class, ahk_id %G_id%
+        Winclose ahk_class %G_class%
       }
     }
     Else
@@ -363,9 +363,9 @@ class zcldev{
         WinGet lt_win,List, %ls_close%
         Loop %lt_win%
         {
-          A_id := lt_win%A_Index%
-          WinGetClass A_class, ahk_id %A_id%
-          Winclose ahk_class %A_class%
+          G_id := lt_win%A_Index%
+          WinGetClass G_class, ahk_id %G_id%
+          Winclose ahk_class %G_class%
         }
       }
     }
@@ -545,10 +545,10 @@ class zcljob2{
 }
 
 
-class zclsap2{
+class go.sap2{
   ;Se38
   se38(i_program,i_ucomm="f8"){
-    this.tcode("se38",on)
+    this.tcode("se38",True)
 
     WinWaitactive Editor ABAP: Imagen inicial
     ui.sendcopy(i_program)
@@ -562,7 +562,7 @@ class zclsap2{
   ;Se38 file
   se38_file(i_ucomm="f8"){
     ;inicializa()
-    this.se38(A_filename,i_ucomm)
+    this.se38(G_filename,i_ucomm)
     Exitapp
   }
 
@@ -571,7 +571,7 @@ class zclsap2{
     Winactivate ahk_class SAP_FRONTEND_SESSION
     ui.winA()
 
-    If A_title contains 250,
+    If G_title contains 250,
       this.se38_file("f7")
     else
       this.se38_file("f6")
@@ -590,7 +590,7 @@ class zclsap2{
   ;Se38 file
   se38pool_file(){
     ;inicializa()
-    this.se38pool(A_filename)
+    this.se38pool(G_filename)
     Exitapp
   }
 
@@ -603,7 +603,7 @@ class zclsap2{
 
 
   se80(){
-    zclsap.tcode("se80")
+    go.sap.tcode("se80")
     winwait Object Navigator,,5 
     Send +{F5}
     winwait Selec.objeto,,3

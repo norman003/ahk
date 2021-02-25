@@ -9,26 +9,28 @@
 #MaxHotkeysPerInterval 500 ;Max press hotkey
 FileEncoding UTF-8 ;Default
 SetNumLockState AlwaysOn ;Activar siempre numlock
+SendMode Input ;Due to its superior speed and reliability
+SetTitleMatchMode 2 ;Modo comparar por titulo de ventanas
+;DetectHiddenText on          ;Detectar ventanas ocultas
+;SetWorkingDir %A_ScriptDir%  ;Ensures a consistent starting directory
 
 ;**********************************************************************
 ; Global
 ;**********************************************************************
 ;Constants
-Global A_scriptini, A_onedrive2, A_langu_es, A_filename
-Global A_autoini, A_sapini
-Global A_day, A_day_en, A_day2, A_day2_en
+Global G_scriptini, G_onedrive2, G_langu_es, G_filename
+Global G_autoini, G_sapini
+Global G_day, G_day_en, G_day2, G_day2_en
 Global G_inistamp
-Global up,dn,
-Global on,off,debug,all,noexit
 
 ;Variable
-Global A_class, A_title, A_exe, A_id, A_control, A_Color, A_x, A_y
-Global A_alto, A_ancho, A_key, A_keyname, A_keypress
-Global A_lastclass, A_lasttitle, A_lastexe, A_lastid
+Global G_class, G_title, G_exe, G_id, G_control, G_color, G_x, G_y
+Global G_key, G_keyname, G_keypress
+Global G_classlast, G_titlelast, G_exelast, G_idlast
 Global G_autovar:=, G_sapvar:=
 
 ;Sap
-Global A_vpn_sw:=
+Global G_vpn_name:=
 
 ;Window
 Global 100_section, 100_key, 100_wintitle
@@ -36,14 +38,16 @@ Global 100_section, 100_key, 100_wintitle
 ;Object 
 Global go,ui
 ui := new zclutil()
-go := {base: new zclqas(), sap: new zclsap(), job: new zcljob()}
+go := {base: new zclqas(), sap: new go.sap(), job: new zcljob()}
 
 ;Inicializa
-A_autoini := "D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\Files\Automate.ini"
-A_sapini := "D:\nt\cloud\OneDrive\Ap\Apps\Ahk\App_omnia\omt.ini"
+G_autoini := "D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\Files\Automate.ini"
+G_sapini := "D:\nt\cloud\OneDrive\Ap\Apps\Ahk\App_omnia\omt.ini"
 
-ui.varmemoryset(A_autoini,G_autovar)
-ui.varmemoryset(A_sapini,G_sapvar)
+;Carga Variables
+ui.varmemoryset(G_autoini,G_autovar)
+ui.varmemoryset(G_sapini,G_sapvar)
+ui.varmemorylocal()
 
 ;**********************************************************************
 ; Util
@@ -54,32 +58,17 @@ class zclutil{
   ; Inicializa
   ;----------------------------------------------------------------------;
   __New(){
-    SendMode Input ;Due to its superior speed and reliability
-    SetTitleMatchMode 2 ;Modo comparar por titulo de ventanas
-    ;DetectHiddenText on          ;Detectar ventanas ocultas
-    ;SetWorkingDir %A_ScriptDir%  ;Ensures a consistent starting directory
-
-    ;01. Inicializa
-    up=up
-    dn=dn
-    on=x
-    off=
-    debug=x
-    noexit=x
-
     ;02. Global
-    A_scriptini := this.scriptini(A_scriptname)
-    A_filename := this.scriptname()
-    EnvGet A_onedrive2, OneDrive
-    FormatTime A_day,,ddMMyy
-    FormatTime A_day_en,,yyMMdd
-    FormatTime A_day2,,dd.MM.yy
-    FormatTime A_day2_en,,yy.MM.dd
-    FormatTime A_day3,,yyyy-MM-dd
+    G_scriptini := this.scriptini(A_scriptname)
+    G_filename := this.scriptname()
+    EnvGet G_onedrive2, OneDrive
+    FormatTime G_day,,ddMMyy
+    FormatTime G_day_en,,yyMMdd
+    FormatTime G_day2,,dd.MM.yy
+    FormatTime G_day2_en,,yy.MM.dd
+    FormatTime G_day3,,yyyy-MM-dd
     If A_Language in 040A,080A,0C0A,100A,140A,180A,1C0A,200A,240A,280A,2C0A,300A,340A,380A,3C0A,400A,440A,480A,4C0A,500A,540A
-      A_langu_es := "X"
-    Else
-      A_langu_es := ""
+      G_langu_es := True
   }
 
   ;----------------------------------------------------------------------;
@@ -160,14 +149,14 @@ class zclutil{
     l_press := GetKeyState("Alt")
     If l_press=1
       r_key=alt
-    A_keypress := r_key
+    G_keypress := r_key
   }
 
   ;Mouse move
   mousedown(i_y=""){
     If i_y<>
     {
-      MouseGetPos x, y, A_id, A_control
+      MouseGetPos x, y, G_id, G_control
       y := y + i_y
       Mousemove %x%,%y%
     }
@@ -248,26 +237,39 @@ class zclutil{
   ;----------------------------------------------------------------------;
   ;Variable - get value
   varmemoryget(i_var,i_debug=""){
-    r_value =
+    ;En la creacion de variables globales
+    local r_value:=
 
     If i_var<>
     {
-      ;ver si es global
-      if i_var contains A_,
+      ;Con iniciales de global
+      if i_var contains A_,G_,
         r_value = % %i_var%
-      
-      ;01.1 ver si esta en lista
+
+      ;En listado de global
       else if i_var in %G_autovar%
         r_value = % %i_var%
-      
-      ;ver si es sap - leer ini
+
+      ;Leer de ini actualizado
       else if i_var in %G_sapvar%
       {
-        iniread r_value, %A_sapini%, data, %i_var%
+        ;convertir ansi a utf-8
+        iniread r_value, %G_sapini%, data, %i_var%
+        r_value := strreplace(r_value,"Ã","Á")
+        r_value := strreplace(r_value,"Ã¡","á")
+        r_value := strreplace(r_value,"Ã‰","É")
+        r_value := strreplace(r_value,"Ã©","é")
+        r_value := strreplace(r_value,"Ã","Í")
+        r_value := strreplace(r_value,"Ã­","í")
+        r_value := strreplace(r_value,"Ã“","Ó")
         r_value := strreplace(r_value,"Ã³","ó")
+        r_value := strreplace(r_value,"Ãš","Ú")
+        r_value := strreplace(r_value,"Ãº","ú")
+        r_value := strreplace(r_value,"Ã‘","Ñ")
+        r_value := strreplace(r_value,"Ã±","ñ")
       }
 
-      ;01.2 Leer valor
+      ;valor real
       If r_value=
         r_value := i_var
 
@@ -317,9 +319,8 @@ class zclutil{
 
   ;Variable - build global dynamic
   varmemoryset(i_ini,byref i_listvar,i_debug=""){
-    Global
-    local lt_tab = []
-    local l_ini, l_var, l_val
+    ;global
+    local lt_tab = [], l_ini, l_var, l_val
 
     l_ini := i_ini
 
@@ -386,6 +387,11 @@ class zclutil{
     }
   }
 
+  ;Convertir a local de ahora en adelante
+  varmemorylocal(){
+    local
+  }
+
   ;----------------------------------------------------------------------;
   ; Windows
   ;----------------------------------------------------------------------;
@@ -393,25 +399,24 @@ class zclutil{
   wina(i_last=""){
     If i_last=
     {
-      WinGetClass A_class, A
-      WinGetTitle A_title, A
-      WinGet A_exe, Processname, A
-      Winget A_id, ID, A
+      WinGetClass G_class, A
+      WinGetTitle G_title, A
+      WinGet G_exe, Processname, A
+      Winget G_id, ID, A
     }
     Else
     {
-      WinGetClass A_lastclass, A
-      WinGetTitle A_lasttitle, A
-      WinGet A_lastexe, Processname, A
-      Winget A_lastid, ID, A
+      WinGetClass G_classlast, A
+      WinGetTitle G_titlelast, A
+      WinGet G_exelast, Processname, A
+      Winget G_idlast, ID, A
     }
   }
 
   ;Datos: Control con Id del cursor
   wincontrol(){
-    ;A_id := WinExist("A")
-    Winget A_id, ID, A
-    ControlGetFocus r_control, ahk_id %A_id%
+    this.wina()
+    ControlGetFocus r_control, ahk_id %G_id%
     Return r_control
   }
 
@@ -422,8 +427,8 @@ class zclutil{
     WinGet lt_win,List,ahk_class %i_class%
     Loop %lt_win%
     {
-      A_id := lt_win%A_Index%
-      WinGetTitle l_title, ahk_id %A_id%
+      G_id := lt_win%A_Index%
+      WinGetTitle l_title, ahk_id %G_id%
       rs_list .=l_title "|"
     }
 
@@ -434,7 +439,7 @@ class zclutil{
   ; Winsel
   ;----------------------------------------------------------------------;
   ;Winsel 100
-  winsel_100(i_activate="x",i_paste=""){
+  winsel_100(i_activate=True,i_paste=""){
     lt_win := this.winlist("OpusApp") ;Word
     lt_win := lt_win this.winlist("XLMAIN") ;Excel
     lt_win := lt_win this.winlist("QWidget") ;Wps
@@ -471,13 +476,13 @@ class zclutil{
         Clipboard =
       }
 
-      IniWrite %100_wintitle%, %A_scriptini%, %100_section%, %100_key%
+      IniWrite %100_wintitle%, %G_scriptini%, %100_section%, %100_key%
       Goto GuiClose
       ;Return
 
     100_close:
       zclprd.winA()
-      If A_title <> %100_section%
+      If G_title <> %100_section%
       {
         SetTimer 100_close,off
         Goto GuiClose
@@ -565,16 +570,16 @@ class zclprd{
   click(i_debug=""){
     ;01. Get Control
     CoordMode Mouse, Screen
-    MouseGetPos A_x, A_y, A_id, A_control
+    MouseGetPos G_x, G_y, G_id, G_control
     If i_debug<>
-      Msgbox %A_control%
+      Msgbox %G_control%
 
     ;01. Taskbar
-    If A_control=MSTaskListWClass1
+    If G_control=MSTaskListWClass1
       Send ^{click}
 
     ;02. True launch bar
-    If A_control=TrueLaunchBarWindow1
+    If G_control=TrueLaunchBarWindow1
     {
       Winwait ahk_class TLB_HTML_WINDOW,,3
       If errorlevel=0
@@ -594,10 +599,10 @@ class zclprd{
       ;01.1 Get instance everything
       If i_getinstance<>
       {
-        If i_getinstance="X"
+        If i_getinstance=True
         {
           ui.winA()
-          i_getinstance := A_title
+          i_getinstance := G_title
         }
         lt_char := strsplit(i_getinstance,"(")
         instance := lt_char[2]
@@ -637,7 +642,7 @@ class zclprd{
         FileRead clipboard, %A_LoopField%
         Sleep 200
         Send ^{v}
-        this.everything_setcount(A_LoopField,A_title)
+        this.everything_setcount(A_LoopField,G_title)
       }
     }
   }
@@ -681,7 +686,7 @@ class zclprd{
   ;----------------------------------------------------------------------;
   ;Write osss
   outlook_time(){
-    l_time := "http://osss.omniasolution.com:8093/Actividad/GestionarActividades?fec="A_day3
+    l_time := "http://osss.omniasolution.com:8093/Actividad/GestionarActividades?fec="G_day3
 
     this.run(l_time)
   }
@@ -692,8 +697,8 @@ class zclprd{
   snipasteauto_ticket(i_debug=""){
     l_desc := ui.varmemoryget("zomt_desc2")
 
-    ;01 si contiene z es error
-    If l_desc contains z,
+    ;01 si contiene zomt es error
+    If l_desc contains zomt,
       Msgbox %A_ThisFunc%: %l_desc%
 
     l_new = D:/NT/Local/Autocapture/%l_desc%/$yyMMdd_HHmmss$.png
@@ -743,7 +748,7 @@ class zclprd{
       Send {space}{enter}
     }
   }
-  
+
   ;Word resize al pegar
   word_resize_paste(){
     ;01. verifica si es una imagen
@@ -826,7 +831,7 @@ class zclprd{
     ;  Exit
 
     ;01. Info app active
-    ;ui.winA("x")
+    ;ui.winA(True)
 
     ;02. Inicializa
     l_app := ui.varmemoryget(i_app,i_debug)
@@ -976,7 +981,7 @@ class zclprd{
     l_path3 := ui.varmemoryget(i_path3)
 
     ;02. join
-    l_dir = %A_onedrive2%%l_path%%l_path2%%l_path3%
+    l_dir = %G_onedrive2%%l_path%%l_path2%%l_path3%
 
     ;03. run
     this.run2(l_dir)
@@ -990,7 +995,7 @@ class zclprd{
   run_file(i_file="",i_mousefactor="2",i_mousedown="",i_debug=""){
     ;inicializa()
     If i_file=
-      i_file := A_filename ;ui.scriptname()
+      i_file := G_filename ;ui.scriptname()
     this.run(i_file,i_mousefactor,,i_debug)
     ui.mousedown(i_mousedown)
     Exitapp
@@ -1003,8 +1008,14 @@ class zclprd{
 
   ;Run patron
   run_patron(i_folder,i_patron,i_debug=""){
+    subrc :=
+
     ;01. patron
     i_patron := i_patron ","
+
+    ;ESFU tiene varias variantes
+    If i_patron contains ESFU,
+      i_patron := i_patron "EEFF,"
 
     ;01. get
     l_folder := ui.varmemoryget(i_folder,i_debug)
@@ -1030,7 +1041,7 @@ class zclprd{
   ;Run patron file
   run_patron_file(i_folder,i_debug=""){
     ;inicializa()
-    i_patron := A_filename
+    i_patron := G_filename
     this.run_patron(i_folder,i_patron,i_debug)
     Exitapp
   }
@@ -1045,24 +1056,25 @@ class zclprd{
     {
       Send !{2}
       ClipWait 1
-      l_sendctrlr=on
-      l_enter=on
+      l_sendctrlr := True
+      l_enter := True
+
       Winactivate OST -
     }
 
     ;02. Ejecutar o Acticar OST
     IfWinactive OST -
-      l_sendctrlr=on
+      l_sendctrlr := True
     Else
-      this.run(i_file,"",on)
+      this.run(i_file,"",True)
 
-    ;Ctrl + R = Registro OST
-    If l_sendctrlr=on
+    ;Registro OST
+    If l_sendctrlr<>
     {
       Winwaitactive OST -,,10
       If errorlevel=0
         Send ^{r}
-      If l_enter=on
+      If l_enter<>
       {
         WinWaitActive Registro,,5
         If errorlevel=0
@@ -1094,7 +1106,7 @@ class zclprd{
       If errorlevel<>0
         Exit
       WinWaitClose ahk_exe Snipaste.exe
-      snipaste=x
+      snipaste := True
     }
     If clipboard= AND snipaste=
     {
@@ -1110,8 +1122,8 @@ class zclprd{
       100_section := "run_docu"
       100_key := ui.keyname()
 
-      IniRead l_title, %A_scriptini%, %100_section%, %100_key%
-      If l_title="" OR i_nuevo="X"
+      IniRead l_title, %G_scriptini%, %100_section%, %100_key%
+      If l_title="" OR i_nuevo<>
         l_title := "##"
 
       ;01.1 Elegir Filename
@@ -1120,7 +1132,7 @@ class zclprd{
         ui.winsel_100("","")
         WinWait %100_section%
         WinWaitClose %100_section%
-        IniRead l_title, %A_scriptini%, %100_section%, %100_key%
+        IniRead l_title, %G_scriptini%, %100_section%, %100_key%
       }
     }
     Else
@@ -1170,9 +1182,33 @@ class zclprd{
 ;**********************************************************************
 ; Sap
 ;**********************************************************************
-class zclsap{
+class go.sap{
+  ;Send key for sap gui
+  send(i_key){
+    ui.wina()
+
+    ;Verificar si es eclipse
+    If this.iseclipse_nosap()
+    {
+      If A_ThisHotkey =!left
+        Send !{left}
+      Else if A_ThisHotkey =!Right
+        Send !{right}
+      Else
+        Send {%A_ThisHotkey%}
+      Exit
+    }
+
+    Send %i_key%
+  }
+
   ;Activar abap
   abap_activate(i_all=""){
+    ui.wina()
+
+    ;Verificar si es eclipse
+    If this.iseclipse_nosap()
+      Exit
 
     this.abap_sync()
 
@@ -1219,13 +1255,13 @@ class zclsap{
     l_key := StrReplace(l_key, l_letter, "")
     StringUpper l_key,l_key
 
-    marca = %l_key%-%A_day%-%i_ini%-%i_ticket%
+    marca = %l_key%-%G_day%-%i_ini%-%i_ticket%
 
     FormatTime, hour,, HHmm
     If SubStr(i_ticket, 1, 1) = 1
-      marca = %l_key%-%A_day%-%i_ini%
+      marca = %l_key%-%G_day%-%i_ini%
 
-    If A_title contains .js,.ps
+    If G_title contains .js,.ps
     {
       l_letter := "//"
       marca = %l_letter%%marca%
@@ -1240,6 +1276,8 @@ class zclsap{
 
   ;Comentar bloque
   abap_commentblock(i_label,i_ini,i_ticket){
+    marca :=[]
+
     ui.winA()
 
     ;Sleep 500
@@ -1247,52 +1285,34 @@ class zclsap{
     l_key := StrReplace(l_key, "*", "")
     StringUpper l_key,l_key
 
-    l_line = %l_key%-%A_day%-%i_ini%-%i_ticket%
+    l_line = %l_key%-%G_day%-%i_ini%-%i_ticket%
 
     FormatTime, hour,, HHmm
     If SubStr(i_ticket, 1, 1) = 1
-      l_line = %l_key%-%A_day%-%i_ini%
+      l_line = %l_key%-%G_day%-%i_ini%
 
-    If A_title contains .js,.ps
-    {
-      l_letter := "//"
-      marca =
-      (
-      %l_letter%{%l_line%
-      %l_letter%}%l_line%
-      )
-    }
-    Else If A_title contains Web IDE,
-    {
-      marca =
-      (
-      <!--{%l_line%-->
-      <!--}%l_line%-->
-      )
-    }
+    If G_title contains .js,.ps
+      marca := "//{" l_line "`n" "//}" l_line
+    Else If G_title contains Web IDE,
+      marca := "<!--{" l_line "-->" "`n" "<!--}" l_line "-->"
     Else
-    {
-      l_letter := "*"
-      marca =
-      (
-      %l_letter%{%l_line%
-      %l_letter%}%l_line%
-      )
-    }
+      marca := "*{" l_line "`n" "*}" l_line
     ui.sendcopy(marca)
   }
 
   ;Sincronizar
   abap_sync(){
+    l_file:=
+
     ui.winA()
 
     ;01. Determinar
-    If A_title contains YMT,
+    If G_title contains YMT,
     {
       l_message = YMT se sincronizo
       l_file = D:\NT\Cloud\OneDrive\Ap\Src\ymt.txt
     }
-    If A_title contains YMR,
+    If G_title contains YMR,
     {
       l_message = YMR se sincronizo
       l_file = D:\NT\Cloud\OneDrive\Ap\Src\Ym_old\ymr_omnia.txt
@@ -1316,7 +1336,7 @@ class zclsap{
 
   ;Logon Sap
   logon(i_name,i_debug=""){
-    local langu:="es",l_empresa,l_vpn_active,l_vpn_sw,tcode:=
+    local langu:="es", l_tcode:=
 
     l_dir_ym := ui.varmemoryget("zym_logon") ;Registro de empresas
     ls_id := ui.varmemoryget(i_name,i_debug)
@@ -1460,18 +1480,18 @@ class zclsap{
 
     ;02. Tcode
     If id_ambiente in 1,dev
-      tcode := "ymt"
-    Else If tcode = ""
-      tcode := "smen"
+      l_tcode := "ymt"
+    Else If l_tcode = ""
+      l_tcode := "smen"
 
     ;03. Debug
     If i_debug<>
-      msgbox %A_ThisFunc%: %conexion_name%-%mandt%-%user%-%pass%-%tcode%-%langu%
+      msgbox %A_ThisFunc%: %conexion_name%-%mandt%-%user%-%pass%-%l_tcode%-%langu%
 
     ;04. Open VPN
-    If (l_vpn_active = "1" and l_vpn_sw = "forticlient" and l_empresa <> A_vpn_sw)
+    If (l_vpn_active = "1" and l_vpn_sw = "forticlient" and l_empresa <> G_vpn_name)
     {
-      A_vpn_sw = l_empresa
+      G_vpn_name = l_empresa
 
       Winactivate FortiClient SSLVPN
       Msgbox 4,,Deseas abrir la vpn de %l_empresa%?
@@ -1484,7 +1504,7 @@ class zclsap{
 
     ;05. Open SapLogon
     If conexion_name<>
-      Run %comspec% /c start sapshcut.exe -type=Transaction -command=%tcode% -language=%langu% -maxgui -sysname="%conexion_name%" -system= -client=%mandt% -user=%user% -pw="%pass%" -reuse=1,,hide
+      Run %comspec% /c start sapshcut.exe -type=Transaction -command=%l_tcode% -language=%langu% -maxgui -sysname="%conexion_name%" -system= -client=%mandt% -user=%user% -pw="%pass%" -reuse=1,,hide
 
     ;06. Ventana de varias sesion
     WinWait Info de licencia,,5
@@ -1521,7 +1541,7 @@ class zclsap{
   ;Logon file
   logon_file(){
     ;inicializa()
-    this.logon(A_filename)
+    this.logon(G_filename)
     Exitapp
   }
 
@@ -1531,7 +1551,7 @@ class zclsap{
     If l_control Not Contains Edit1
       Exit
 
-    this.tcode("se37",on)
+    this.tcode("se37",True)
     Winwaitactive Biblioteca de funciones: Acceso,,5
     If errorlevel = 0
     {
@@ -1566,7 +1586,7 @@ class zclsap{
   }
 
   ;Qas transport
-  qas_transport(i_noexit="x"){
+  qas_transport(i_noexit=True){
     Send ^{/}{tab 7}
     Sleep 100
     ui.sendcopy("zomt_mandt2")
@@ -1580,26 +1600,45 @@ class zclsap{
     Send {enter}
   }
 
+  ;Es eclipse con sapgui
+  iseclipse_nosap(){
+    ltguion := strsplit(G_title,"-")
+    If (G_exe = "eclipse.exe" and ltguion.Count() <> 3)
+      l_nosap := true
+    Else
+      l_nosap := false
+    return l_nosap
+  }
+
   ;Tcode complete
   tcode(i_tcode="",i_noexit="",i_button="",i_debug=""){
+    l_tcode:=
+
     ;01. Inicializa
     l_control := ui.wincontrol()
 
     If i_debug<>
       Msgbox %l_control%-%A_ThisHotkey%
 
-    ;02. Cuando es ctrl se pega la tecla
-    If A_thishotkey contains ^,
-      Sleep 500
+    ;02 Verifica eclipse
+    If this.iseclipse_nosap()
+    {
+      If i_tcode=enter
+        Send {enter}
+      Exit
+    }
 
-    ;03. Para atajos de teclado y archivos
+    ;02. Para atajos de teclado y archivos
     If i_tcode not in enter,complete
     {
-      Ifwinnotactive ahk_class SAP_FRONTEND_SESSION
-        Winactivate ahk_class SAP_FRONTEND_SESSION
-      WinWaitActive ahk_class SAP_FRONTEND_SESSION,,3
-      If errorlevel <> 0
-        Exit
+      If G_exe <> eclipse.exe
+      {
+        Ifwinnotactive ahk_class SAP_FRONTEND_SESSION
+          Winactivate ahk_class SAP_FRONTEND_SESSION
+        WinWaitActive ahk_class SAP_FRONTEND_SESSION,,3
+        If errorlevel <> 0
+          Exit
+      }
 
       StringLower i_tcode, i_tcode
       If i_tcode not in f-47,
@@ -1610,13 +1649,16 @@ class zclsap{
         l_tcode = /n%l_tcode%
 
       i_control := "Edit1"
+      Sleep 50
       ControlSetText %i_control%, %l_tcode%
+      Sleep 50
       ControlSend %i_control%, {enter}
     }
 
     ;04. Autocomplete y enter
     Else If l_control contains Edit1,
     {
+      ;Esperar 50 para obtener texto completo
       Sleep 50
       ControlGetText i_tcode, %l_control%
       StringLower i_tcode, i_tcode
@@ -1654,12 +1696,12 @@ class zclsap{
 
   ;Tcode with view
   tcodeopen(i_tcode){
-    this.tcode(i_tcode,on)
+    this.tcode(i_tcode,True)
     Sleep 2000
 
     ;01. Dev
     ui.winA()
-    If A_title contains /1,/20
+    If G_title contains /1,/20
     {
       Sleep 1000
       Send {F6}
@@ -1676,15 +1718,15 @@ class zclsap{
   ;Tcode file
   tcode_file(i_noexit=""){
     ;inicializa()
-    this.tcode(A_filename)
+    this.tcode(G_filename)
     If i_noexit<>
       Exit
     ExitApp
   }
 
   ;Tcode with button
-  tcodebutton(i_tcode,i_button,i_debug="x"){
-    this.tcode(i_tcode,on)
+  tcodebutton(i_tcode,i_button,i_debug=""){
+    this.tcode(i_tcode,True)
 
     If i_tcode contains ymt,
       l_title := "YMT"
@@ -1708,7 +1750,7 @@ class zclsap{
   ;Tcode file with button
   tcodebutton_file(){
     ;inicializa()
-    lt_char := strsplit(A_filename,"~")
+    lt_char := strsplit(G_filename,"~")
     l_filename := lt_char[0]
     l_button := lt_char[0]
     this.tcodebutton(l_filename,l_button)
@@ -1722,7 +1764,7 @@ class zclsap{
     If errorlevel=0
     {
       ui.winA()
-      lt_char := strsplit(A_title,"-")
+      lt_char := strsplit(G_title,"-")
       l_sap := lt_char[2]
       l_util := lt_char[3] + 1
 

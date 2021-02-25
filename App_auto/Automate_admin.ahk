@@ -6,6 +6,8 @@ GroupAdd gr_launcher_hs, ahk_exe everything.exe
 GroupAdd gr_launcher_app, ahk_exe switcheroo.exe
 GroupAdd gr_sap_debug, debugging
 GroupAdd gr_sap_debug, debugger
+GroupAdd gr_sap, ahk_class SAP_FRONTEND_SESSION
+GroupAdd gr_sap, ahk_class SWT_Window0
 go.snipasteauto_ticket()
 :*:;;::
 ui.sendcopy("ñ","","backspace")
@@ -26,19 +28,20 @@ ui.sendcopy("zomt_desc3")
 :*:n3::
 ui.sendcopy("zomt_desc4")
 :*:d1::
-ui.sendcopy("A_day_en")
+ui.sendcopy("G_day_en")
 :*:d2::
-ui.sendcopy("A_day")
+ui.sendcopy("G_day")
 :*:d3::
-ui.sendcopy("A_day2_en")
+ui.sendcopy("G_day2_en")
 :*:d4::
-ui.sendcopy("A_day2")
+ui.sendcopy("G_day2")
 ^!a::Reload
 $ESC::go.app_close()
-^`::go.run_docu("","x")
+^`::go.run_docu("",True)
 $!`::go.run("A_groupy")
 !F1::go.run("A_switcheroo")
-NumpadDiv::go.run("A_sublime")
+NumLock::go.run("A_excel")
+NumpadDiv::go.run("A_eclipse")
 NumpadMult::go.run("A_vscode")
 NumpadSub::go.run("A_chrome")
 NumpadAdd::go.run("A_saplogon")

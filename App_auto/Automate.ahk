@@ -6,6 +6,8 @@ GroupAdd gr_launcher_hs, ahk_exe everything.exe
 GroupAdd gr_launcher_app, ahk_exe switcheroo.exe
 GroupAdd gr_sap_debug, debugging
 GroupAdd gr_sap_debug, debugger
+GroupAdd gr_sap, ahk_class SAP_FRONTEND_SESSION
+GroupAdd gr_sap, ahk_class SWT_Window0
 go.snipasteauto_ticket()
 ^!a::Reload
 #v::go.sound_toogle()
@@ -234,20 +236,21 @@ return
 ~enter::go.32770_enter()
 #IfWinActive /000 SAP
 !q::go.sap.qas_transport()
-#IfWinActive ahk_group Gr_sap_debug
+#IfWinActive ahk_group gr_sap_debug
 !q::go.sap.qasopen_var()
 !`::go.sap.qasopen_val()
-#IfWinActive ahk_class SAP_FRONTEND_SESSION
-+F4::Send {F4}
-^F12::go.sap.abap_sync()
-!w::go.sap.tcode("/nex")
-!h::go.sap.tcode("/h")
+#IfWinActive ahk_group gr_sap
++F4::go.sap.send("{F4}")
+!left::go.sap.send("+{F6}")
+!right::go.sap.send("+{F7}")
+!n::go.sap.send("^{/}")
+^n::go.sap.send("^{/}/o")
+^+k::go.sap.send("^+l")
 ^b::go.sap.abap_activate("all")
 !b::go.sap.abap_activate()
-!left::Send +{F6}
-!right::Send +{F7}
-!n::Send ^{/}
-^n::Send ^{/}/o
+$enter::go.sap.tcode("enter")
+!w::go.sap.tcode("/nex")
+!h::go.sap.tcode("/h")
 !t::go.sap.tcode("ymt")
 !r::go.sap.tcodebutton("ymt","=btn3a")
 !1::go.sap.tcode("se11")
@@ -267,8 +270,6 @@ return
 ^0::go.sap.tcode("+se80")
 ^t::go.sap.tcode("+ymt")
 ^r::go.sap.tcodebutton("+ymt","=btn3a")
-$enter::go.sap.tcode("enter")
-^+k::^+l
 :*b0:qas::
 go.sap.qasopen()
 :*b0:ymt::
