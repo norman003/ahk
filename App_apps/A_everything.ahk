@@ -9,4 +9,4 @@ IF alt=1
 Else If ctrl=1
   msgbox customizar
 Else
-  zclprd.run_file("","1")
+  go.run_file("","1")

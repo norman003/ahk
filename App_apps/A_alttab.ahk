@@ -5,9 +5,9 @@ alt := GetKeyState("Alt")
 ctrl := GetKeyState("Ctrl")
 
 IF alt=1
-  zclprd.run_file("A_switcheroo","1")
+  go.run_file("A_switcheroo","1")
 Else If ctrl=1
-  zclprd.run_file("A_ctrltab","","40")
+  go.run_file("A_ctrltab","","40")
 Else
-  zclprd.run_file("A_alttab","","40")
+  go.run_file("A_alttab","","40")
       

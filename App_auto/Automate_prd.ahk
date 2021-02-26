@@ -38,7 +38,7 @@ Global 100_section, 100_key, 100_wintitle
 ;Object 
 Global go,ui
 ui := new zclutil()
-go := {base: new zclqas(), sap: new go.sap(), job: new zcljob()}
+go := {base: new zclqas(), sap: new zclsap(), job: new zcljob()}
 
 ;Inicializa
 G_autoini := "D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\Files\Automate.ini"
@@ -67,7 +67,7 @@ class zclutil{
     FormatTime G_day2,,dd.MM.yy
     FormatTime G_day2_en,,yy.MM.dd
     FormatTime G_day3,,yyyy-MM-dd
-    If A_Language in 040A,080A,0C0A,100A,140A,180A,1C0A,200A,240A,280A,2C0A,300A,340A,380A,3C0A,400A,440A,480A,4C0A,500A,540A
+    If A_language in 040A,080A,0C0A,100A,140A,180A,1C0A,200A,240A,280A,2C0A,300A,340A,380A,3C0A,400A,440A,480A,4C0A,500A,540A
       G_langu_es := True
   }
 
@@ -156,9 +156,9 @@ class zclutil{
   mousedown(i_y=""){
     If i_y<>
     {
-      MouseGetPos x, y, G_id, G_control
-      y := y + i_y
-      Mousemove %x%,%y%
+      MouseGetPos G_x, G_y, G_id, G_control
+      G_y := G_y + i_y
+      Mousemove %G_x%,%G_y%
     }
   }
 
@@ -481,7 +481,7 @@ class zclutil{
       ;Return
 
     100_close:
-      zclprd.winA()
+      go.winA()
       If G_title <> %100_section%
       {
         SetTimer 100_close,off
@@ -580,11 +580,7 @@ class zclprd{
 
     ;02. True launch bar
     If G_control=TrueLaunchBarWindow1
-    {
-      Winwait ahk_class TLB_HTML_WINDOW,,3
-      If errorlevel=0
-        WinClose ahk_class TLB_HTML_WINDOW
-    }
+      this.truelaunchbar_trial()
   }
 
   ;----------------------------------------------------------------------;
@@ -731,6 +727,12 @@ class zclprd{
     Else If level<25
       level=25
     soundset %level%
+  }
+
+  truelaunchbar_trial(){
+    Winwait ahk_class TLB_HTML_WINDOW,,3
+    If errorlevel=0
+      WinClose ahk_class TLB_HTML_WINDOW
   }
 
   ;----------------------------------------------------------------------;
@@ -992,12 +994,12 @@ class zclprd{
   }
 
   ;Run from file
-  run_file(i_file="",i_mousefactor="2",i_mousedown="",i_debug=""){
-    ;inicializa()
+  run_file(i_file="",i_mousefactor="",i_mousedown="300",i_debug=""){
+    ui.mousedown(i_mousedown)
+
     If i_file=
       i_file := G_filename ;ui.scriptname()
     this.run(i_file,i_mousefactor,,i_debug)
-    ui.mousedown(i_mousedown)
     Exitapp
   }
 
@@ -1182,7 +1184,7 @@ class zclprd{
 ;**********************************************************************
 ; Sap
 ;**********************************************************************
-class go.sap{
+class zclsap{
   ;Send key for sap gui
   send(i_key){
     ui.wina()
@@ -1336,7 +1338,8 @@ class go.sap{
 
   ;Logon Sap
   logon(i_name,i_debug=""){
-    local langu:="es", l_tcode:=
+    l_langu:="es"
+    l_tcode:=
 
     l_dir_ym := ui.varmemoryget("zym_logon") ;Registro de empresas
     ls_id := ui.varmemoryget(i_name,i_debug)
@@ -1353,20 +1356,20 @@ class go.sap{
     If l_ambiente not contains de,qa,pr,sn,ha
     {
       ;01.1 Obtener ID de empresa, ambiente
-      id_empresa := substr(ls_id[1], 1, 2) ;DA
-      id_ambiente := substr(ls_id[1], 3, 1) ;1,2,3 = dev,qas,prd
+      l_empresaid := substr(ls_id[1], 1, 2) ;DA
+      l_ambienteid := substr(ls_id[1], 3, 1) ;1,2,3 = dev,qas,prd
 
-      If id_ambiente not in 1,2,3,4,5,6
+      If l_ambienteid not in 1,2,3,4,5,6
       {
-        id_empresa := substr(ls_id[1], 2, 2) ;DA
-        id_ambiente := substr(ls_id[1], 1, 1) ;1,2,3 = dev,qas,prd
+        l_empresaid := substr(ls_id[1], 2, 2) ;DA
+        l_ambienteid := substr(ls_id[1], 1, 1) ;1,2,3 = dev,qas,prd
       }
 
       ;01.2 Leer registro de la empresa
       Loop read, %l_dir_ym%,
       {
         ls_line := StrSplit(A_LoopReadLine, A_tab)
-        If ls_line[14] = id_empresa
+        If ls_line[14] = l_empresaid
           Break
       }
 
@@ -1374,47 +1377,47 @@ class go.sap{
       l_empresa := ls_line[1] ;danper
       l_vpn_active := ls_line[3] ;0 inactivo, 1 activo
       l_vpn_sw := ls_line[13] ;forticlient, pulse
-      If id_ambiente in 1
+      If l_ambienteid in 1
       {
-        conexion_name = %l_empresa% dev
-        mandt := ls_line[16]
-        user := ls_line[5]
-        pass := ls_line[6]
+        l_conexionname = %l_empresa% dev
+        l_mandt := ls_line[16]
+        l_user := ls_line[5]
+        l_pass := ls_line[6]
       }
-      If id_ambiente in 2
+      If l_ambienteid in 2
       {
-        conexion_name = %l_empresa% qas
-        mandt := ls_line[17]
-        user := ls_line[7]
-        pass := ls_line[8]
+        l_conexionname = %l_empresa% qas
+        l_mandt := ls_line[17]
+        l_user := ls_line[7]
+        l_pass := ls_line[8]
       }
-      If id_ambiente in 3
+      If l_ambienteid in 3
       {
-        conexion_name = %l_empresa% prd
-        mandt := ls_line[18]
-        user := ls_line[9]
-        pass := ls_line[10]
+        l_conexionname = %l_empresa% prd
+        l_mandt := ls_line[18]
+        l_user := ls_line[9]
+        l_pass := ls_line[10]
       }
-      If id_ambiente in 4
+      If l_ambienteid in 4
       {
-        conexion_name = %l_empresa% def
-        mandt := ls_line[16]
-        user := ls_line[5]
-        pass := ls_line[6]
+        l_conexionname = %l_empresa% def
+        l_mandt := ls_line[16]
+        l_user := ls_line[5]
+        l_pass := ls_line[6]
       }
-      If id_ambiente in 5
+      If l_ambienteid in 5
       {
-        conexion_name = %l_empresa% qaf
-        mandt := ls_line[17]
-        user := ls_line[7]
-        pass := ls_line[8]
+        l_conexionname = %l_empresa% qaf
+        l_mandt := ls_line[17]
+        l_user := ls_line[7]
+        l_pass := ls_line[8]
       }
-      If id_ambiente in 6
+      If l_ambienteid in 6
       {
-        conexion_name = %l_empresa% prf
-        mandt := ls_line[18]
-        user := ls_line[9]
-        pass := ls_line[10]
+        l_conexionname = %l_empresa% prf
+        l_mandt := ls_line[18]
+        l_user := ls_line[9]
+        l_pass := ls_line[10]
       }
     }
     ;----------------------------------------------------------;
@@ -1424,22 +1427,22 @@ class go.sap{
     {
       ;01.4 Inicilizar
       l_empresa := ls_id[1] ;danper
-      id_ambiente := ls_id[2] ;dev,qas,prd
+      l_ambienteid := ls_id[2] ;dev,qas,prd
       l_opcion := ls_id[3] ;mandt or tcode or langu
-      user := ls_id[4] ;user
-      pass := ls_id[5] ;pass
-      conexion_name = %l_empresa% %id_ambiente% ;danper dev
+      l_user := ls_id[4] ;user
+      l_pass := ls_id[5] ;pass
+      l_conexionname = %l_empresa% %l_ambienteid% ;danper dev
 
-      ;01.5 Mandt, Langu, Tcode
+      ;01.5 mandt, langu, tcode
       If strlen(l_opcion)=2
-        langu := l_opcion
+        l_langu := l_opcion
       Else If strlen(l_opcion)=3
-        mandt := l_opcion
+        l_mandt := l_opcion
       Else
-        tcode := l_opcion
+        l_tcode := l_opcion
 
       If i_debug<>
-        Msgbox %A_ThisFunc%: %langu%-%mandt%-%tcode%
+        Msgbox %A_ThisFunc%: %l_langu%-%l_mandt%-%tcode%
 
       ;01.6 Leer registro de empresa
       Loop read, %l_dir_ym%,
@@ -1449,27 +1452,27 @@ class go.sap{
           Break
       }
 
-      ;01.7 Mandt, User, Pass
-      If user=
+      ;01.7 mandt, user, pass
+      If l_user=
       {
         ;01.71 Mandante,user,pass
-        If id_ambiente in dev
+        If l_ambienteid in dev
         {
-          mandt := ls_line[16]
-          user := ls_line[5]
-          pass := ls_line[6]
+          l_mandt := ls_line[16]
+          l_user := ls_line[5]
+          l_pass := ls_line[6]
         }
-        If id_ambiente in qas
+        If l_ambienteid in qas
         {
-          mandt := ls_line[17]
-          user := ls_line[7]
-          pass := ls_line[8]
+          l_mandt := ls_line[17]
+          l_user := ls_line[7]
+          l_pass := ls_line[8]
         }
-        If id_ambiente in prd
+        If l_ambienteid in prd
         {
-          mandt := ls_line[18]
-          user := ls_line[9]
-          pass := ls_line[10]
+          l_mandt := ls_line[18]
+          l_user := ls_line[9]
+          l_pass := ls_line[10]
         }
       }
 
@@ -1479,14 +1482,14 @@ class go.sap{
     }
 
     ;02. Tcode
-    If id_ambiente in 1,dev
+    If l_ambienteid in 1,dev
       l_tcode := "ymt"
     Else If l_tcode = ""
       l_tcode := "smen"
 
     ;03. Debug
     If i_debug<>
-      msgbox %A_ThisFunc%: %conexion_name%-%mandt%-%user%-%pass%-%l_tcode%-%langu%
+      msgbox %A_ThisFunc%: %l_conexionname%-%l_mandt%-%l_user%-%l_pass%-%l_tcode%-%l_langu%
 
     ;04. Open VPN
     If (l_vpn_active = "1" and l_vpn_sw = "forticlient" and l_empresa <> G_vpn_name)
@@ -1497,14 +1500,14 @@ class go.sap{
       Msgbox 4,,Deseas abrir la vpn de %l_empresa%?
       Ifmsgbox yes
       {
-        Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%id_empresa%0.ahk
+        Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
         Sleep 12000
       }
     }
 
     ;05. Open SapLogon
-    If conexion_name<>
-      Run %comspec% /c start sapshcut.exe -type=Transaction -command=%l_tcode% -language=%langu% -maxgui -sysname="%conexion_name%" -system= -client=%mandt% -user=%user% -pw="%pass%" -reuse=1,,hide
+    If l_conexionname<>
+      Run %comspec% /c start sapshcut.exe -type=Transaction -command=%l_tcode% -language=%l_langu% -maxgui -sysname="%l_conexionname%" -system= -client=%l_mandt% -user=%l_user% -pw="%l_pass%" -reuse=1,,hide
 
     ;06. Ventana de varias sesion
     WinWait Info de licencia,,5
@@ -1518,18 +1521,18 @@ class go.sap{
       Sleep 300
 
       ;04.1 Dev
-      If id_ambiente = 1
+      If l_ambienteid = 1
       {
         ;04.11 Empresas no ingreso automatico
-        If id_empresa not contains cm,au,un,pi,pe
+        If l_empresaid not contains cm,au,un,pi,pe
           Send {enter}
       }
 
       ;04.2 Qas
-      If id_ambiente = 2
+      If l_ambienteid = 2
       {
         ;04.21 Empresas no ingreso automatico
-        If id_empresa not contains un,pi
+        If l_empresaid not contains un,pi
           Send {enter}
       }
     }
@@ -1589,13 +1592,13 @@ class go.sap{
   qas_transport(i_noexit=True){
     Send ^{/}{tab 7}
     Sleep 100
-    ui.sendcopy("zomt_mandt2")
+    ui.sendcopy("zomt_l_mandt2")
     Sleep 100
     Send {tab}
-    ui.sendcopy("zomt_user2",i_noexit)
+    ui.sendcopy("zomt_l_user2",i_noexit)
     Sleep 100
     Send {tab}
-    ui.sendcopy("zomt_pass2",i_noexit)
+    ui.sendcopy("zomt_l_pass2",i_noexit)
     Sleep 100
     Send {enter}
   }
@@ -1830,7 +1833,7 @@ class zcljob{
 
     ;01. Download
     If (a_hour=13 and a_min=00)
-      UrlDownloadToFile https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap, %i_ymg%
+      UrlDownloadToFile https://raw.githubl_usercontent.com/abapGit/build/master/zabapgit.abap, %i_ymg%
   }
 }
 
