@@ -934,12 +934,12 @@ class zclprd{
 
   ;Run no admin
   run2(i_file){
-    this.everything_setcount(i_file)
-
     If A_IsAdmin
       this.runshell(i_file)
     Else
       run %i_file%
+
+    this.everything_setcount(i_file)
   }
 
   ;Run shell
@@ -1000,6 +1000,7 @@ class zclprd{
     If i_file=
       i_file := G_filename ;ui.scriptname()
     this.run(i_file,i_mousefactor,,i_debug)
+    this.truelaunchbar_trial()
     Exitapp
   }
 
@@ -1380,42 +1381,48 @@ class zclsap{
       If l_ambienteid in 1
       {
         l_conexionname = %l_empresa% dev
-        l_mandt := ls_line[16]
+        l_enter := ls_line[16]
+        l_mandt := ls_line[19]
         l_user := ls_line[5]
         l_pass := ls_line[6]
       }
       If l_ambienteid in 2
       {
         l_conexionname = %l_empresa% qas
-        l_mandt := ls_line[17]
+        l_enter := ls_line[17]
+        l_mandt := ls_line[20]
         l_user := ls_line[7]
         l_pass := ls_line[8]
       }
       If l_ambienteid in 3
       {
         l_conexionname = %l_empresa% prd
-        l_mandt := ls_line[18]
+        l_enter := ls_line[18]
+        l_mandt := ls_line[21]
         l_user := ls_line[9]
         l_pass := ls_line[10]
       }
       If l_ambienteid in 4
       {
         l_conexionname = %l_empresa% def
-        l_mandt := ls_line[16]
+        l_enter := ls_line[16]
+        l_mandt := ls_line[19]
         l_user := ls_line[5]
         l_pass := ls_line[6]
       }
       If l_ambienteid in 5
       {
         l_conexionname = %l_empresa% qaf
-        l_mandt := ls_line[17]
+        l_enter := ls_line[17]
+        l_mandt := ls_line[20]
         l_user := ls_line[7]
         l_pass := ls_line[8]
       }
       If l_ambienteid in 6
       {
         l_conexionname = %l_empresa% prf
-        l_mandt := ls_line[18]
+        l_enter := ls_line[18]
+        l_mandt := ls_line[21]
         l_user := ls_line[9]
         l_pass := ls_line[10]
       }
@@ -1458,19 +1465,22 @@ class zclsap{
         ;01.71 Mandante,user,pass
         If l_ambienteid in dev
         {
-          l_mandt := ls_line[16]
+          l_enter := ls_line[16]
+          l_mandt := ls_line[19]
           l_user := ls_line[5]
           l_pass := ls_line[6]
         }
         If l_ambienteid in qas
         {
-          l_mandt := ls_line[17]
+          l_enter := ls_line[17]
+          l_mandt := ls_line[20]
           l_user := ls_line[7]
           l_pass := ls_line[8]
         }
         If l_ambienteid in prd
         {
-          l_mandt := ls_line[18]
+          l_enter := ls_line[18]
+          l_mandt := ls_line[21]
           l_user := ls_line[9]
           l_pass := ls_line[10]
         }
@@ -1494,10 +1504,16 @@ class zclsap{
     ;04. Open VPN
     If (l_vpn_active = "1" and l_vpn_sw = "forticlient" and l_empresa <> G_vpn_name)
     {
-      G_vpn_name = l_empresa
+      ;G_vpn_name = l_empresa
 
-      Winactivate FortiClient SSLVPN
-      Msgbox 4,,Deseas abrir la vpn de %l_empresa%?
+      Winactivate FortiClient SSLVPN,,0.5
+      If errorlevel=0
+      {
+        Winwaitactive FortiClient SSLVPN,,0.5
+        If errorlevel=0
+          Winmove 500,500
+      }
+      Msgbox 260,,Deseas abrir la vpn de %l_empresa%?
       Ifmsgbox yes
       {
         Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
@@ -1520,21 +1536,9 @@ class zclsap{
       Send {tab}{up}
       Sleep 300
 
-      ;04.1 Dev
-      If l_ambienteid = 1
-      {
-        ;04.11 Empresas no ingreso automatico
-        If l_empresaid not contains cm,au,un,pi,pe
-          Send {enter}
-      }
-
-      ;04.2 Qas
-      If l_ambienteid = 2
-      {
-        ;04.21 Empresas no ingreso automatico
-        If l_empresaid not contains un,pi
-          Send {enter}
-      }
+      ;04.1 Dev y Qas
+      If ( l_ambienteid <> 3 and l_enter= )
+        Send {enter}
     }
 
     If ui.ishs()
