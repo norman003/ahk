@@ -19,8 +19,8 @@ SetTitleMatchMode 2 ;Modo comparar por titulo de ventanas
 ;**********************************************************************
 ;Constants
 Global G_scriptini, G_onedrive2, G_langu_es, G_filename
-Global G_autoini, G_sapini
-Global G_day, G_day_en, G_day2, G_day2_en
+Global G_autoini, G_sapini, G_ymini
+Global G_day, G_day_en, G_day2, G_day2_en, G_day3
 Global G_inistamp
 
 ;Variable
@@ -28,9 +28,6 @@ Global G_class, G_title, G_exe, G_id, G_control, G_color, G_x, G_y
 Global G_key, G_keyname, G_keypress
 Global G_classlast, G_titlelast, G_exelast, G_idlast
 Global G_autovar:=, G_sapvar:=
-
-;Sap
-Global G_vpn_name:=
 
 ;Window
 Global 100_section, 100_key, 100_wintitle
@@ -43,6 +40,7 @@ go := {base: new zclqas(), sap: new zclsap(), job: new zcljob()}
 ;Inicializa
 G_autoini := "D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_auto\Files\Automate.ini"
 G_sapini := "D:\nt\cloud\OneDrive\Ap\Apps\Ahk\App_omnia\omt.ini"
+G_ymini := "D:\NT\Cloud\OneDrive\Ap\Src\ymt.ini"
 
 ;Carga Variables
 ui.varmemoryset(G_autoini,G_autovar)
@@ -59,7 +57,7 @@ class zclutil{
   ;----------------------------------------------------------------------;
   __New(){
     ;02. Global
-    G_scriptini := this.scriptini(A_scriptname)
+    ;G_scriptini := this.scriptini(A_scriptname)
     G_filename := this.scriptname()
     EnvGet G_onedrive2, OneDrive
     FormatTime G_day,,ddMMyy
@@ -74,21 +72,33 @@ class zclutil{
   ;----------------------------------------------------------------------;
   ; Files .Ini
   ;----------------------------------------------------------------------;
-  ;Read ini
-  iniread(i_ini,i_section,i_key){
-    ;01. Clear key
-    ;l_key := ui.keyname(i_key)
-
-    ;02. ReadFile Ini
-    IniRead r_value, %i_ini%, %i_section%, %i_key%
-    If r_value="ERROR" or r_value=""
-    {
-      Msgbox %A_ThisFunc%: %i_ini%, %i_section%, %l_key%, %r_value%
+  autoget(i_key,i_section="VAR"){
+    IniRead r_value, %G_autoini%, %i_section%, %i_key%
+    If r_value="ERROR"
       r_value=
-    }
     return r_value
   }
-
+  autoset(i_value,i_key,i_section="VAR"){
+    IniWrite %i_value%, %G_autoini%, %i_section%, %i_key%
+  }
+  sapget(i_key,i_section="VAR"){
+    IniRead r_value, %G_sapini%, %i_section%, %i_key%
+    If r_value=ERROR
+      r_value=
+    return r_value
+  }
+  sapset(i_value,i_key,i_section="VAR"){
+    IniWrite %i_value%, %G_sapini%, %i_section%, %i_key%
+  }
+  ymget(i_key,i_section="VAR"){
+    IniRead r_value, %G_ymini%, %i_section%, %i_key%
+    If r_value=ERROR
+      r_value=
+    return r_value
+  }
+  ymset(i_value,i_key,i_section="VAR"){
+    IniWrite %i_value%, %G_ymini%, %i_section%, %i_key%
+  }
   ;----------------------------------------------------------------------;
   ; Validaciones
   ;----------------------------------------------------------------------;
@@ -163,6 +173,20 @@ class zclutil{
   }
 
   ;----------------------------------------------------------------------;
+  ; Opciones de pegado
+  ;----------------------------------------------------------------------;
+  pasteall(i_data,i_active=""){
+    Send ^a
+    Sleep 100
+    this.sendcopy(i_data)
+    If i_active<>
+    {
+      Sleep 2000
+      Send ^{f3}
+    }
+  }
+
+  ;----------------------------------------------------------------------;
   ; Envio de texto
   ;----------------------------------------------------------------------;
   ;Send clipboard
@@ -189,6 +213,14 @@ class zclutil{
       If ui.ishs()
         Exit
     }
+  }
+
+  ;----------------------------------------------------------------------;
+  ; Sleep
+  ;----------------------------------------------------------------------;
+  sleep(i_sec){
+    i_sec := i_sec * 1000
+    sleep %i_sec%
   }
 
   ;----------------------------------------------------------------------;
@@ -237,10 +269,10 @@ class zclutil{
   ;----------------------------------------------------------------------;
   ;Variable - get value
   varmemoryget(i_var,i_debug=""){
-    ;En la creacion de variables globales
-    local r_value:=
+    r_value :=
+    l_len := StrLen(i_var)
 
-    If i_var<>
+    If l_len<30
     {
       ;Con iniciales de global
       if i_var contains A_,G_,
@@ -275,9 +307,10 @@ class zclutil{
 
       If i_debug<>
         msgbox %A_ThisFunc%: %i_var% = %r_value%
-
-      return r_value
     }
+    Else
+      r_value := i_var
+    return r_value
   }
 
   ;Variable - get title
@@ -476,7 +509,7 @@ class zclutil{
         Clipboard =
       }
 
-      IniWrite %100_wintitle%, %G_scriptini%, %100_section%, %100_key%
+      ui.autoset(100_wintitle,100_key,100_section)
       Goto GuiClose
       ;Return
 
@@ -504,7 +537,7 @@ class zclprd{
   ; Popup 32770
   ;----------------------------------------------------------------------;
   32770_enter(){
-    Ifwinactive OK
+    If WinActive("OK")
     {
       Winactivate Buscar,,5
       Winwaitactive Buscar,,5
@@ -545,12 +578,12 @@ class zclprd{
     ;06. Saplogon
     Else If ui.iswinactivetab("gt4_kill")
     {
-      Ifwinactive Debugger Table
+      If Winactive("Debugger Table")
       {
         Send {F3}
         Winwait debugging
       }
-      Ifwinactive debugging
+      If Winactive("debugging")
       {
         Send +{F3}
         Winwait Detener func.debugg.,,3
@@ -944,33 +977,33 @@ class zclprd{
 
   ;Run shell
   runshell(i_file){
-    shellWindows := ComObjCreate("{9BA05972-F6A8-11CF-A442-00A0C90A8F39}")
-    desktop := shellWindows.Item(ComObj(19, 8)) ; VT_UI4, SCW_DESKTOP                
+    l_shellwin := ComObjCreate("{9BA05972-F6A8-11CF-A442-00A0C90A8F39}")
+    l_desktop := l_shellwin.Item(ComObj(19, 8)) ; VT_UI4, SCW_DESKTOP                
 
     ;01. Retrieve top-level browser object.
-    If ptlb := ComObjQuery(desktop
+    If l_ptlb := ComObjQuery(l_desktop
       , "{4C96BE40-915C-11CF-99D3-00AA004AE837}" ; SID_STopLevelBrowser
     , "{000214E2-0000-0000-C000-000000000046}") ; IID_IShellBrowser
     {
       ;01.1 IShellBrowser.QueryActiveShellView -> IShellView
-      If DllCall(NumGet(NumGet(ptlb+0)+15*A_PtrSize), "ptr", ptlb, "ptr*", psv:=0) = 0
+      If DllCall(NumGet(NumGet(l_ptlb+0)+15*A_PtrSize), "ptr", l_ptlb, "ptr*", l_psv:=0) = 0
       {
         ;01.11 Define IID_IDispatch.
         VarSetCapacity(IID_IDispatch, 16)
         NumPut(0x46000000000000C0, NumPut(0x20400, IID_IDispatch, "int64"), "int64")
 
         ;IShellView.GetItemObject -> IDispatch (object which implements IShellFolderViewDual)
-        DllCall(NumGet(NumGet(psv+0)+15*A_PtrSize), "ptr", psv, "uint", 0, "ptr", &IID_IDispatch, "ptr*", pdisp:=0)
+        DllCall(NumGet(NumGet(l_psv+0)+15*A_PtrSize), "ptr", l_psv, "uint", 0, "ptr", &IID_IDispatch, "ptr*", l_pdisp:=0)
 
         ;01.12 Get Shell object.
-        shell := ComObj(9,pdisp,1).Application
+        l_shell := ComObj(9,l_pdisp,1).Application
 
         ;01.13 IShellDispatch2.ShellExecute
-        shell.ShellExecute(i_file)
+        l_shell.ShellExecute(i_file)
 
-        ObjRelease(psv)
+        ObjRelease(l_psv)
       }
-      ObjRelease(ptlb)
+      ObjRelease(l_ptlb)
     }
   }
 
@@ -1006,7 +1039,7 @@ class zclprd{
 
   ;Run cmd
   run_cmd(i_file){
-    Run %comspec% /k %i_file%,,hide
+    Run %Comspec% /k %i_file%,,hide
   }
 
   ;Run patron
@@ -1054,35 +1087,27 @@ class zclprd{
   ;----------------------------------------------------------------------;
   ;Run ost
   run_ost(i_file){
+    l_ost := "OST -"
+
     ;01. Outlook
-    Ifwinactive ahk_exe OUTLOOK.EXE
+    If Winactive("ahk_exe OUTLOOK.EXE")
     {
       Send !{2}
       ClipWait 1
-      l_sendctrlr := True
-      l_enter := True
-
-      Winactivate OST -
+      Winactivate %l_ost%
     }
 
     ;02. Ejecutar o Acticar OST
-    IfWinactive OST -
-      l_sendctrlr := True
-    Else
+    If !winexist(l_ost)
       this.run(i_file,"",True)
 
     ;Registro OST
-    If l_sendctrlr<>
+    Winwaitactive %l_ost%,,10
+    If errorlevel=0
     {
-      Winwaitactive OST -,,10
-      If errorlevel=0
-        Send ^{r}
-      If l_enter<>
-      {
-        WinWaitActive Registro,,5
-        If errorlevel=0
-          Send {enter}
-      }
+      Send ^{r}
+      WinWaitActive Registro,,5
+      Send {enter}
     }
     Exit
   }
@@ -1125,7 +1150,7 @@ class zclprd{
       100_section := "run_docu"
       100_key := ui.keyname()
 
-      IniRead l_title, %G_scriptini%, %100_section%, %100_key%
+      l_title := ui.autoget(100_key,100_section)
       If l_title="" OR i_nuevo<>
         l_title := "##"
 
@@ -1135,7 +1160,7 @@ class zclprd{
         ui.winsel_100("","")
         WinWait %100_section%
         WinWaitClose %100_section%
-        IniRead l_title, %G_scriptini%, %100_section%, %100_key%
+        ui.autoset(l_title,100_key,100_section)
       }
     }
     Else
@@ -1216,13 +1241,13 @@ class zclsap{
     this.abap_sync()
 
     ;01. SQ02
-    Ifwinactive InfoSet
+    If Winactive("InfoSet")
     {
       Send +{F6}
-      WinWaitActive modIficado,,2
+      WinWaitActive modificado,,2
       If errorlevel=0
         Send {enter}
-      WinWaitActive InFormación,,5
+      WinWaitActive Información,,5
       If errorlevel=0
         Send {enter}
       WinWaitActive Visualizar log,,5
@@ -1354,16 +1379,16 @@ class zclsap{
     ;----------------------------------------------------------;
     ;Escenario 1: DA1 = danper 1=dev,2=qas,3=prd
     ;----------------------------------------------------------;
-    If l_ambiente not contains de,qa,pr,sn,ha
+    If l_ambiente not contains de,qa,pr
     {
       ;01.1 Obtener ID de empresa, ambiente
       l_empresaid := substr(ls_id[1], 1, 2) ;DA
-      l_ambienteid := substr(ls_id[1], 3, 1) ;1,2,3 = dev,qas,prd
+      l_ambienteid := substr(ls_id[1], 3, 1) ;1,2,3,4,5,6
 
       If l_ambienteid not in 1,2,3,4,5,6
       {
-        l_empresaid := substr(ls_id[1], 2, 2) ;DA
-        l_ambienteid := substr(ls_id[1], 1, 1) ;1,2,3 = dev,qas,prd
+        l_empresaid := substr(ls_id[1], 2, 2) ;DANPER
+        l_ambienteid := substr(ls_id[1], 1, 1) ;dev,qas,prd
       }
 
       ;01.2 Leer registro de la empresa
@@ -1489,10 +1514,11 @@ class zclsap{
       ;01.8 Vpn
       l_vpn_active := ls_line[3] ;0 inactivo, 1 activo
       l_vpn_sw := ls_line[13] ;forticlient, pulse
+      l_empresaid := ls_line[14]
     }
 
     ;02. Tcode
-    If l_ambienteid in 1,dev
+    If l_ambienteid in 1
       l_tcode := "ymt"
     Else If l_tcode = ""
       l_tcode := "smen"
@@ -1502,29 +1528,19 @@ class zclsap{
       msgbox %A_ThisFunc%: %l_conexionname%-%l_mandt%-%l_user%-%l_pass%-%l_tcode%-%l_langu%
 
     ;04. Open VPN
-    If (l_vpn_active = "1" and l_vpn_sw = "forticlient" and l_empresa <> G_vpn_name)
+    If (l_vpn_active = "1" and l_vpn_sw = "forticlient")
     {
-      ;G_vpn_name = l_empresa
-
-      Winactivate FortiClient SSLVPN,,0.5
-      If errorlevel=0
+      l_open := WinExist("FortiClient SSLVPN")
+      If ( ui.sapget("vpn") <> l_empresaid Or l_open= )
       {
-        Winwaitactive FortiClient SSLVPN,,0.5
-        If errorlevel=0
-          Winmove 700,180
-        Msgbox 260,,Deseas abrir la vpn de %l_empresa%?
-        Ifmsgbox yes
-        {
-          Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
-          Sleep 12000
-        }
-      }
-      Else
-      {
+        ui.sapset(l_empresaid,"vpn")
         Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
-        Sleep 12000
+        ui.sleep(14)
       }
     }
+
+    ;Open sap
+    l_sap := WinExist("ahk_class SAP_FRONTEND_SESSION")
 
     ;05. Open SapLogon
     If l_conexionname<>
@@ -1545,6 +1561,14 @@ class zclsap{
       If ( l_ambienteid <> 3 and l_enter= )
         Send {enter}
     }
+
+    ;Ajustar ventana
+    If l_sap<>
+      go.run("A_groupy")
+
+    ;ymt version
+    If l_tcode = ymt
+      this.ymt_version()
 
     If ui.ishs()
       Exit
@@ -1622,6 +1646,29 @@ class zclsap{
     return l_nosap
   }
 
+  ;Se24
+  se24(i_class,i_ucomm="f7",i_full=""){
+    this.tcode("se24",True)
+
+    WinWaitactive Generador clases: Acceso
+    ui.sendcopy(i_class)
+
+    Send {%i_ucomm%}
+
+    If i_ucomm in f6,f7
+    {
+      WinWaitActive %i_class%,,7
+      if i_full<>
+      {
+        this.tcode("=OO_TOGGLE_CB_MODE")
+        WinWaitActive Gener.clases basado,,3
+      }
+    }
+
+    If ui.ishs()
+      Exit
+  }
+
   ;Se38
   se38(i_program,i_ucomm="f8"){
     this.tcode("se38",True)
@@ -1630,6 +1677,9 @@ class zclsap{
     ui.sendcopy(i_program)
 
     Send {%i_ucomm%}
+
+    If i_ucomm in f6,f7
+      WinWaitActive %i_program%,,7
 
     If ui.ishs()
       Exit
@@ -1785,10 +1835,11 @@ class zclsap{
   ;ymt version
   ymt_version(i_debug=""){
     ;01. Get version sap
-    Winwaitactive YMT,,3
+    Winwaitactive YMT,,7
     If errorlevel=0
     {
       ui.winA()
+      ui.sleep(1)
       lt_char := strsplit(G_title,"-")
       l_sap := lt_char[2]
       l_util := lt_char[3] + 1
@@ -1798,20 +1849,11 @@ class zclsap{
       FileRead lt_code, %l_file%
       Loop Parse, lt_code, `n, `r
         l_file_version := A_Index
-      ; {
-      ;   If A_Index = 4
-      ;   {
-      ;     l_version = %A_LoopField%
-      ;     lt_ver := strsplit(l_version,A_space)
-      ;     l_file_version := lt_ver[2]
-      ;     Break
-      ;   }
-      ; }
       If l_sap <> %l_file_version%
       {
-        Msgbox Se debe sincronizar: Sap %l_sap% - File %l_file_version% en clipboard
-        clipboard := lt_code
+        ;Update ymt
         this.se38("YMT","f6")
+        ui.pasteall(lt_code,True)
         go.everything_setcount(l_file)
       }
 
@@ -1824,9 +1866,9 @@ class zclsap{
           l_file_version := A_Index
         If l_util <> %l_file_version%
         {
-          Msgbox Se debe sincronizar: Sap %l_util% - File %l_file_version% en clipboard
-          clipboard := lt_code
-          this.tcode("/ose24")
+          ;Update zcl_util
+          this.se24("ZCL_UTIL","f6",True)
+          ui.pasteall(lt_code,True)
           go.everything_setcount(l_file)
         }
       }
@@ -1851,10 +1893,10 @@ class zcljob{
   }
 
   job_min(i_ymg){
-    IfEqual a_min,00, MsgBox 4096,Hora,It's %a_hour%-----------------
+    IfEqual A_min,00, MsgBox 4096,Hora,It's %A_hour%-----------------
 
     ;01. Download
-    If (a_hour=13 and a_min=00)
+    If (A_hour=13 and A_min=00)
       UrlDownloadToFile https://raw.githubl_usercontent.com/abapGit/build/master/zabapgit.abap, %i_ymg%
   }
 }

@@ -33,6 +33,8 @@ Send !{2}
 go.run("https://osss.omniasolution.com/(S(psg4o5riybusqjv5s2lyna45))/login.aspx")
 return
 !w::Send ^+1
+#IfWinActive OST -
+F4::go.run_ost("")
 #IfWinActive ahk_exe Excel.exe
 ^left::Send ^{pgup}
 ^right::Send ^{pgdn}
