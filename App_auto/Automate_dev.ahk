@@ -546,18 +546,6 @@ class zcljob2{
 
 
 class go.sap2{
-  ;Se38
-  se38(i_program,i_ucomm="f8"){
-    this.tcode("se38",True)
-
-    WinWaitactive Editor ABAP: Imagen inicial
-    ui.sendcopy(i_program)
-
-    Send {%i_ucomm%}
-
-    If ui.ishs()
-      Exit
-  }
 
   ;Se38 file
   se38_file(i_ucomm="f8"){

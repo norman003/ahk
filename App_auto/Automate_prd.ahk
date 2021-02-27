@@ -1511,10 +1511,15 @@ class zclsap{
       {
         Winwaitactive FortiClient SSLVPN,,0.5
         If errorlevel=0
-          Winmove 500,500
+          Winmove 700,180
+        Msgbox 260,,Deseas abrir la vpn de %l_empresa%?
+        Ifmsgbox yes
+        {
+          Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
+          Sleep 12000
+        }
       }
-      Msgbox 260,,Deseas abrir la vpn de %l_empresa%?
-      Ifmsgbox yes
+      Else
       {
         Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
         Sleep 12000
@@ -1615,6 +1620,19 @@ class zclsap{
     Else
       l_nosap := false
     return l_nosap
+  }
+
+  ;Se38
+  se38(i_program,i_ucomm="f8"){
+    this.tcode("se38",True)
+
+    WinWaitactive Editor ABAP: Imagen inicial
+    ui.sendcopy(i_program)
+
+    Send {%i_ucomm%}
+
+    If ui.ishs()
+      Exit
   }
 
   ;Tcode complete
@@ -1793,7 +1811,7 @@ class zclsap{
       {
         Msgbox Se debe sincronizar: Sap %l_sap% - File %l_file_version% en clipboard
         clipboard := lt_code
-        this.tcode("/nse38")
+        this.se38("YMT","f6")
         go.everything_setcount(l_file)
       }
 
