@@ -30,7 +30,7 @@ Global G_classlast, G_titlelast, G_exelast, G_idlast
 Global G_autovar:=, G_sapvar:=
 
 ;Window
-Global 100_section, 100_key, 100_wintitle
+Global 100_key, 100_seltitle, 100_name:= "run_docu"
 
 ;Object 
 Global go,ui
@@ -72,31 +72,31 @@ class zclutil{
   ;----------------------------------------------------------------------;
   ; Files .Ini
   ;----------------------------------------------------------------------;
-  autoget(i_key,i_section="VAR"){
+  iniautoget(i_key,i_section="AUTOGEN"){
     IniRead r_value, %G_autoini%, %i_section%, %i_key%
-    If r_value="ERROR"
+    If r_value=ERROR
       r_value=
     return r_value
   }
-  autoset(i_value,i_key,i_section="VAR"){
+  iniautoset(i_value,i_key,i_section="AUTOGEN"){
     IniWrite %i_value%, %G_autoini%, %i_section%, %i_key%
   }
-  sapget(i_key,i_section="VAR"){
+  inisapget(i_key,i_section="AUTOGEN"){
     IniRead r_value, %G_sapini%, %i_section%, %i_key%
     If r_value=ERROR
       r_value=
     return r_value
   }
-  sapset(i_value,i_key,i_section="VAR"){
+  inisapset(i_value,i_key,i_section="AUTOGEN"){
     IniWrite %i_value%, %G_sapini%, %i_section%, %i_key%
   }
-  ymget(i_key,i_section="VAR"){
+  iniymget(i_key,i_section="AUTOGEN"){
     IniRead r_value, %G_ymini%, %i_section%, %i_key%
     If r_value=ERROR
       r_value=
     return r_value
   }
-  ymset(i_value,i_key,i_section="VAR"){
+  iniymset(i_value,i_key,i_section="AUTOGEN"){
     IniWrite %i_value%, %G_ymini%, %i_section%, %i_key%
   }
   ;----------------------------------------------------------------------;
@@ -131,10 +131,9 @@ class zclutil{
     If i_key=
       i_key := A_thishotkey
     r_key := i_key
-    r_key := StrReplace(r_key, "::", "") ;Hotstring
-    r_key := StrReplace(r_key, ":*:", "") ;Hotstring
+    r_key := StrReplace(r_key, "::", "")    ;Hotstring
+    r_key := StrReplace(r_key, ":*:", "")   ;Hotstring
     r_key := StrReplace(r_key, ":*b0:", "") ;Hotstring
-    ;r_key := StrReplace(r_key, "$", "")     ;$
     return r_key
   }
 
@@ -160,6 +159,16 @@ class zclutil{
     If l_press=1
       r_key=alt
     G_keypress := r_key
+  }
+
+  ;Key send
+  keysend(i_key){
+    Send %i_key%
+
+    ;Para captura esperar para no tomar con el mensaje
+    If i_key contains Screen
+      ui.sleep(0.1)
+    this.tooltipshow(i_key)
   }
 
   ;Mouse move
@@ -257,11 +266,16 @@ class zclutil{
     }
   }
 
-  ;show tooltip
+  ;show
   tooltipshow(i_message="Saved!!!"){
     ToolTip %i_message%
-    Sleep 2000
-    ToolTip
+    SetTimer tooltip_close,2000
+    return
+    
+    tooltip_close:
+      ToolTip
+      SetTimer tooltip_close,off
+    Return
   }
 
   ;----------------------------------------------------------------------;
@@ -311,43 +325,6 @@ class zclutil{
     Else
       r_value := i_var
     return r_value
-  }
-
-  ;Variable - get title
-  vartitleget(byref l_app, byref l_title,i_debug){
-    ;Inicializa
-    l_title :=
-
-    ;1. Get titulo concatenado ~|
-    If l_app contains ~,|,
-    {
-      lt_line := StrSplit(l_app,"~")
-      l_app := lt_line[1]
-      l_title := lt_line[2]
-    }
-
-    ;2. Sino obtener extension
-    If l_title=
-    {
-      SplitPath l_app,l_title2,l_dir,l_extension,l_title
-
-      ;01.1 Extension
-      If l_extension<>
-      {
-        If l_extension contains doc,
-          l_title := l_title " - Word"
-        Else If l_extension contains xls,
-          l_title := l_title " - Excel"
-        Else If l_extension in code-workspace,
-          l_title := l_title " (Workspace)"
-      }
-      ;01.1 Folder
-      Else If l_app contains :\,
-        l_title := l_app
-    }
-
-    If i_debug<>
-      msgbox %A_ThisFunc%: %l_app%-%l_title%-%l_extension%
   }
 
   ;Variable - build global dynamic
@@ -425,6 +402,44 @@ class zclutil{
     local
   }
 
+
+  ;Variable - get title
+  vartitleget(byref l_app, byref l_title,i_debug){
+    ;Inicializa
+    l_title :=
+
+    ;1. Get titulo concatenado ~|
+    If l_app contains ~,|,
+    {
+      lt_line := StrSplit(l_app,"~")
+      l_app := lt_line[1]
+      l_title := lt_line[2]
+    }
+
+    ;2. Sino obtener extension
+    If l_title=
+    {
+      SplitPath l_app,l_title2,l_dir,l_extension,l_title
+
+      ;01.1 Extension
+      If l_extension<>
+      {
+        If l_extension contains doc,
+          l_title := l_title " - Word"
+        Else If l_extension contains xls,
+          l_title := l_title " - Excel"
+        Else If l_extension in code-workspace,
+          l_title := l_title " (Workspace)"
+      }
+      ;01.1 Folder
+      Else If l_app contains :\,
+        l_title := l_app
+    }
+
+    If i_debug<>
+      msgbox %A_ThisFunc%: %l_app%-%l_title%-%l_extension%
+  }
+
   ;----------------------------------------------------------------------;
   ; Windows
   ;----------------------------------------------------------------------;
@@ -472,7 +487,7 @@ class zclutil{
   ; Winsel
   ;----------------------------------------------------------------------;
   ;Winsel 100
-  winsel_100(i_activate=True,i_paste=""){
+  winsel_100(){
     lt_win := this.winlist("OpusApp") ;Word
     lt_win := lt_win this.winlist("XLMAIN") ;Excel
     lt_win := lt_win this.winlist("QWidget") ;Wps
@@ -480,43 +495,32 @@ class zclutil{
     lt_win := lt_win this.winlist("Framework::CFrame") ;Onenote
     lt_win := lt_win this.winlist("Chrome_WidgetWin_1") ;Chromium
 
-    Gui Add, ListBox, w400 h100 g100_listbox v100_wintitle, %lt_win%
+    Gui Add, ListBox, w400 h100 g100_listbox v100_seltitle, %lt_win%
     Gui Add, Button, x0 y0 Default Hidden g100_ok
-    Gui Show,, %100_section%
+    Gui Show,, %100_name%
 
     MouseMove 150,50
-    Winactivate %100_section%
-    WinWaitActive %100_section%
-    SetTimer 100_close, 100
+    Winactivate %100_name%
+    WinWaitActive %100_name%
+    SetTimer 100_close, 500
     Return
 
     ;01. Eventos dynpro
     100_listbox:
       If (A_GuiEvent <> "DoubleClick")
         Exit
+      
     100_ok:
       Gui Submit, NoHide
-
-      ;01.1 Activar
-      If i_activate<>
-        Winactivate %100_wintitle%
-
-      ;01.2 Pegar en fondo
-      If i_paste<>
-      {
-        ControlSend _WwG1, {CtrlDown}{v}{CtrlUp}, %l_title%
-        ControlSend _WwG1, {enter}, %l_title%
-        Clipboard =
-      }
-
-      ui.autoset(100_wintitle,100_key,100_section)
+      ui.iniymset(100_seltitle,100_key)
       Goto GuiClose
-      ;Return
 
     100_close:
-      go.winA()
-      If G_title <> %100_section%
+      ui.winA()
+      If G_title <> %100_name%
       {
+        If 100_seltitle=
+          100_seltitle := #
         SetTimer 100_close,off
         Goto GuiClose
       }
@@ -861,7 +865,7 @@ class zclprd{
   ; Run = link, file, windows, hotkey
   ;----------------------------------------------------------------------;
   ;Run
-  run(i_app,i_mousefactor="",i_noesc="",i_debug=""){
+  run(i_app,i_title="",i_mousefactor="",i_debug=""){
     ;If ui.IsWheel()
     ;  Exit
 
@@ -925,25 +929,37 @@ class zclprd{
     {
       If winactive(l_title)
       {
-        If i_noesc=
+        If i_title=
         {
           Send !{esc}
           Winactivate A
         }
+        Else
+          Return l_title
       }
       Else If winexist(l_title)
       {
-        Winactivate %l_title%
-        WinWaitActive %l_title%,,3
-        If errorlevel<>0
-          MsgBox "No se puede activar" %l_title%
+        If i_title=
+        {
+          Winactivate %l_title%
+          WinWaitActive %l_title%,,3
+          If errorlevel<>0
+            MsgBox "No se puede activar" %l_title%
+        }
+        Else
+          Return l_title
       }
       Else
       {
         this.run2(l_app)
-        WinWait %l_title%,,5
+        WinWait %l_title%,,7
         If errorlevel = 0
-          Winactivate A
+        {
+          If i_title=
+            Winactivate A
+          Else
+            Return l_title
+        }
       }
     }
 
@@ -959,6 +975,10 @@ class zclprd{
       Sleep 100
       Mousemove %x%,%y%
     }
+
+    ;Mensaje
+    If A_ThisHotkey contains Numpad,
+      ui.tooltipshow(i_app)
 
     ;11. hotstring
     If ui.ishs()
@@ -1032,7 +1052,7 @@ class zclprd{
 
     If i_file=
       i_file := G_filename ;ui.scriptname()
-    this.run(i_file,i_mousefactor,,i_debug)
+    this.run(i_file,,i_mousefactor)
     this.truelaunchbar_trial()
     Exitapp
   }
@@ -1086,30 +1106,46 @@ class zclprd{
   ; Run Excel
   ;----------------------------------------------------------------------;
   ;Run ost
-  run_ost(i_file){
-    l_ost := "OST -"
-
-    ;01. Outlook
+  run_ost(){
     If Winactive("ahk_exe OUTLOOK.EXE")
     {
       Send !{2}
       ClipWait 1
-      Winactivate %l_ost%
     }
+    this.run_ost_file(Clipboard)
+  }
 
-    ;02. Ejecutar o Acticar OST
-    If !winexist(l_ost)
-      this.run(i_file,"",True)
-
-    ;Registro OST
-    Winwaitactive %l_ost%,,10
-    If errorlevel=0
+  ;Ost desde archivo
+  run_ost_file(i_ticket=""){
+    ;Clipboard
+    If i_ticket=<>
+      l_name := clipboard := i_ticket
+    Else
+      l_name := clipboard := G_filename
+    
+    ;Registro
+    l_title := this.run("zomt_excel",True)
+    SetKeyDelay 30 ;Para controlsend
+    If l_title<>
+      ControlSend EXCEL71, {CtrlDown}r{CtrlUp}, %l_title%
+    
+    ;Mensaje
+    l_horadif := l_hora := A_hour
+    l_mindif  := l_min  := Round(A_min / 14, 0) * 15
+    If l_min=60
     {
-      Send ^{r}
-      WinWaitActive Registro,,5
-      Send {enter}
+      l_hora := l_hora + 1
+      l_min = 0
     }
-    Exit
+    l_mindif := l_mindif - A_min
+    l_horadif := l_horadif - A_hour
+    l_message := l_horadif ":" l_mindif " minutos Diferencia `n" l_hora ":" l_min " " l_name
+    ui.tooltipshow(l_message)
+
+    ;Esperar por el mensaje
+    Sleep 2000
+    If i_ticket=
+      Exitapp
   }
 
   ;----------------------------------------------------------------------;
@@ -1138,29 +1174,27 @@ class zclprd{
     }
     If clipboard= AND snipaste=
     {
-      ToolTip Clipboard Vacio,400,500
-      Sleep 2000
-      ToolTip
+      ui.tooltipshow("Clipboard vacio")
       Exit
     }
 
     ;01. Filename asociado a hotkey
     If i_filename=
     {
-      100_section := "run_docu"
       100_key := ui.keyname()
 
-      l_title := ui.autoget(100_key,100_section)
-      If l_title="" OR i_nuevo<>
-        l_title := "##"
+      i_filename := l_title := ui.iniymget(100_key)
+      If i_nuevo<>
+        l_title := "#"
 
       ;01.1 Elegir Filename
       If !WinExist(l_title)
       {
-        ui.winsel_100("","")
-        WinWait %100_section%
-        WinWaitClose %100_section%
-        ui.autoset(l_title,100_key,100_section)
+        ui.winsel_100()
+        WinWaitClose %100_name%
+        i_filename := l_title := 100_seltitle
+        If 100_seltitle=#
+          Exit
       }
     }
     Else
@@ -1171,25 +1205,21 @@ class zclprd{
 
       ;01.3 Abrir
       If !WinExist(l_title)
-      {
-        this.run(i_filename,,,i_debug)
-        Exit
-      }
+        this.run(i_filename)
     }
 
     ;02. Pegar
     If WinExist(l_title)
     {
       ;03.1 En fondo
-      If i_filename contains doc,
+      If i_filename contains doc,Word,xls,Excel
       {
-        ControlSend _WwG1, ^v, %l_title%
+        SetKeyDelay 30 ;Para controlsend
+        ControlSend _WwG1, {CtrlDown}{v}{CtrlUp}, %l_title%
         ControlSend _WwG1, {enter}, %l_title%
 
         ;02.11 Mensaje
-        ToolTip Documento actualizado en fondo `nVerIficar si se actualizo`nPuedes crear nuevos archivo usando las plantillas,800,500
-        Sleep 2000
-        ToolTip
+        ui.tooltipshow("Documento actualizado en fondo")
       }
       ;02.2 Activando
       Else{
@@ -1212,7 +1242,7 @@ class zclprd{
 ;**********************************************************************
 class zclsap{
   ;Send key for sap gui
-  send(i_key){
+  sap_send(i_key){
     ui.wina()
 
     ;Verificar si es eclipse
@@ -1531,9 +1561,9 @@ class zclsap{
     If (l_vpn_active = "1" and l_vpn_sw = "forticlient")
     {
       l_open := WinExist("FortiClient SSLVPN")
-      If ( ui.sapget("vpn") <> l_empresaid Or l_open= )
+      If ( ui.inisapget("vpn") <> l_empresaid Or l_open= )
       {
-        ui.sapset(l_empresaid,"vpn")
+        ui.inisapset(l_empresaid,"vpn")
         Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
         ui.sleep(14)
       }
@@ -1544,7 +1574,10 @@ class zclsap{
 
     ;05. Open SapLogon
     If l_conexionname<>
+    {
       Run %comspec% /c start sapshcut.exe -type=Transaction -command=%l_tcode% -language=%l_langu% -maxgui -sysname="%l_conexionname%" -system= -client=%l_mandt% -user=%l_user% -pw="%l_pass%" -reuse=1,,hide
+      ui.tooltipshow(ls_id)
+    }
 
     ;06. Ventana de varias sesion
     WinWait Info de licencia,,5
@@ -1563,7 +1596,7 @@ class zclsap{
     }
 
     ;Ajustar ventana
-    If l_sap<>
+    If l_sap=
       go.run("A_groupy")
 
     ;ymt version

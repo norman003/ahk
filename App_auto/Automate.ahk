@@ -34,7 +34,7 @@ go.run("https://osss.omniasolution.com/(S(psg4o5riybusqjv5s2lyna45))/login.aspx"
 return
 !w::Send ^+1
 #IfWinActive OST -
-F4::go.run_ost("")
+F4::go.run_ost("zomt_excel")
 #IfWinActive ahk_exe Excel.exe
 ^left::Send ^{pgup}
 ^right::Send ^{pgdn}
@@ -242,12 +242,12 @@ return
 !q::go.sap.qasopen_var()
 !`::go.sap.qasopen_val()
 #IfWinActive ahk_group gr_sap
-+F4::go.sap.send("{F4}")
-!left::go.sap.send("+{F6}")
-!right::go.sap.send("+{F7}")
-!n::go.sap.send("^{/}")
-^n::go.sap.send("^{/}/o")
-^+k::go.sap.send("^+l")
++F4::go.sap.sap_send("{F4}")
+!left::go.sap.sap_send("+{F6}")
+!right::go.sap.sap_send("+{F7}")
+!n::go.sap.sap_send("^{/}")
+^n::go.sap.sap_send("^{/}/o")
+^+k::go.sap.sap_send("^+l")
 ^b::go.sap.abap_activate("all")
 !b::go.sap.abap_activate()
 $enter::go.sap.tcode("enter")
