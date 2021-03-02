@@ -718,10 +718,15 @@ class zclprd{
   ; Outlook
   ;----------------------------------------------------------------------;
   ;Write osss
-  outlook_time(){
-    l_time := "http://osss.omniasolution.com:8093/Actividad/GestionarActividades?fec="G_day3
+  outlook_osss(i_url){
+    Send !{2}
+    Clipwait 1
 
-    this.run(l_time)
+    If i_url contains fec
+      l_var := i_url G_day3
+    Else
+      l_var := i_url
+    this.run(l_var)
   }
 
   ;----------------------------------------------------------------------;
@@ -1110,7 +1115,7 @@ class zclprd{
     If Winactive("ahk_exe OUTLOOK.EXE")
     {
       Send !{2}
-      ClipWait 1
+      ClipWait
     }
     this.run_ost_file(Clipboard)
   }
@@ -1125,7 +1130,7 @@ class zclprd{
     
     ;Registro
     l_title := this.run("zomt_excel",True)
-    SetKeyDelay 30 ;Para controlsend
+    SetKeyDelay 30,10 ;Para controlsend
     If l_title<>
       ControlSend EXCEL71, {CtrlDown}r{CtrlUp}, %l_title%
     
@@ -1375,6 +1380,11 @@ class zclsap{
       l_message = YMR se sincronizo
       l_file = D:\NT\Cloud\OneDrive\Ap\Src\Ym_old\ymr_omnia.txt
     }
+    If G_title contains YMM,
+    {
+      l_message = YMM se sincronizo
+      l_file = D:\NT\Cloud\OneDrive\Ap\Src\ymm.txt
+    }
     If l_file<>
     {
       ;01.1 Copiar
@@ -1400,6 +1410,7 @@ class zclsap{
     l_dir_ym := ui.varmemoryget("zym_logon") ;Registro de empresas
     ls_id := ui.varmemoryget(i_name,i_debug)
     ls_id := ui.keyclear(ls_id)
+    ui.tooltipshow(ls_id)
     ls_id := StrSplit(ls_id, A_space)
     l_ambiente := ls_id[2] ;dev,qas,prd,def,qaf,prf
 
@@ -1560,8 +1571,7 @@ class zclsap{
     ;04. Open VPN
     If (l_vpn_active = "1" and l_vpn_sw = "forticlient")
     {
-      l_open := WinExist("FortiClient SSLVPN")
-      If ( ui.inisapget("vpn") <> l_empresaid Or l_open= )
+      If ( ui.inisapget("vpn") <> l_empresaid Or !WinExist("FortiClient SSLVPN") )
       {
         ui.inisapset(l_empresaid,"vpn")
         Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
@@ -1574,10 +1584,7 @@ class zclsap{
 
     ;05. Open SapLogon
     If l_conexionname<>
-    {
       Run %comspec% /c start sapshcut.exe -type=Transaction -command=%l_tcode% -language=%l_langu% -maxgui -sysname="%l_conexionname%" -system= -client=%l_mandt% -user=%l_user% -pw="%l_pass%" -reuse=1,,hide
-      ui.tooltipshow(ls_id)
-    }
 
     ;06. Ventana de varias sesion
     WinWait Info de licencia,,5
@@ -1624,7 +1631,7 @@ class zclsap{
     Winwaitactive Biblioteca de funciones: Acceso,,5
     If errorlevel = 0
     {
-      ui.sendcopy("TRINT_OBJECTS_CHECK_AND_INSERT",noexit)
+      ui.sendcopy("TRINT_OBJECTS_CHECK_AND_INSERT",True)
       Send {F7}
       WinWaitActive TRINT_OBJECTS_CHECK_AND_INSERT,,5
       Sleep 500

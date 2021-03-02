@@ -19,19 +19,10 @@ go.snipasteauto_ticket()
 ~^s::reload
 #IfWinActive ahk_exe Outlook.exe
 F4::go.run_ost("zomt_excel")
-^t::go.outlook_time()
-^p::
-Send !{2}
-go.run("http://osss.omniasolution.com:8093/Planificacion/GestionarPlanificacion")
-return
-^n::
-Send !{2}
-go.run("https://osss.omniasolution.com:8090/en/#/inicio/consulta-ticket")
-return
-^o::
-Send !{2}
-go.run("https://osss.omniasolution.com/(S(psg4o5riybusqjv5s2lyna45))/login.aspx")
-return
+^t::go.outlook_osss("http://osss.omniasolution.com:8093/Actividad/GestionarActividades?fec=")
+^p::go.outlook_osss("http://osss.omniasolution.com:8093/Planificacion/GestionarPlanificacion")
+^n::go.outlook_osss("https://osss.omniasolution.com:8090/en/#/inicio/consulta-ticket")
+^o::go.outlook_osss("http://osss.omniasolution.com")
 !w::Send ^+1
 #IfWinActive OST -
 F4::go.run_ost("zomt_excel")
@@ -287,6 +278,7 @@ go.sap.qasopen()
 :*b0:scc1::
 :*b0:sm12::
 :*b0:sm30::
+:*b0:sm37::
 :*b0:stms::
 :*b0:sost::
 :*b0:sq01::
