@@ -1,0 +1,19 @@
+$F1	::	go.run("A_ctrltab")
+$F2	::	go.run("A_alttab")
+$F3	::	go.run("A_switcheroo")
+
+;basicos
+$!1	::	go.run("A_saplogon")
+$!2	::	go.run("A_excel")
+$!3	::	go.run("A_word")
+
+;code
+$!4	::	go.run("A_vscode")
+$!5	::	go.run("A_chrome")
+$!6	::	go.run("A_eclipse")
+$!8	::	go.run("A_notepad")
+
+;aditional
+$!7	::	go.run("A_notepad2")
+$!9	::	go.run("A_teams")
+$!0	::	go.run("A_outlook")

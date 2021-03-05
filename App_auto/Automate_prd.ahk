@@ -126,7 +126,7 @@ class zclutil{
   ;----------------------------------------------------------------------;
   ; Key
   ;----------------------------------------------------------------------;
-  ;Key clear ::,:*:,:*b0:
+  ;Key clear
   keyclear(i_key=""){
     If i_key=
       i_key := A_thishotkey
@@ -185,12 +185,13 @@ class zclutil{
   ; Opciones de pegado
   ;----------------------------------------------------------------------;
   pasteall(i_data,i_active=""){
+    Sleep 1000
     Send ^a
     Sleep 100
     this.sendcopy(i_data)
     If i_active<>
     {
-      Sleep 2000
+      Sleep 1000
       Send ^{f3}
     }
   }
@@ -468,6 +469,13 @@ class zclutil{
     Return r_control
   }
 
+  winexist(i_name){
+    r_exist := Winexist(i_name)
+    If r_exist = 0x0
+      r_exist =
+    return r_exist
+  }
+
   ;List de ventanas con ahk_class abiertas separadas con |
   winlist(i_class){
     rs_list := ""
@@ -603,6 +611,20 @@ class zclprd{
       Send !{f4}
   }
 
+  ;App altesc
+  app_altesc(i_opcion=""){
+    If i_opcion<>
+    {
+      Send !+{esc}
+      Winactivate A
+    }
+    Else
+    {
+      Send !{esc}
+      Winactivate A
+    }
+  }
+
   ;Click adicional accion
   click(i_debug=""){
     ;01. Get Control
@@ -712,6 +734,13 @@ class zclprd{
       If A_LoopField contains txt,abap,
         run "C:\Program Files\Sublime Text 3\sublime_text.exe" %A_LoopField%
     }
+  }
+
+  everything_bookmark(i_bookmark){
+    ;Activar
+    this.run("A_everything")
+    WinWaitActive ahk_class EVERYTHING
+    Send %i_bookmark%
   }
 
   ;----------------------------------------------------------------------;
@@ -913,7 +942,7 @@ class zclprd{
       Msgbox %A_ThisFunc%: %i_app% - app esta vacia
 
     ;05. Send Key
-    Else If l_app contains ^,!
+    Else If l_app contains ^,!,{
       Send %l_app%
 
     ;06. Kill
@@ -982,7 +1011,7 @@ class zclprd{
     }
 
     ;Mensaje
-    If A_ThisHotkey contains Numpad,
+    If A_ThisHotkey contains todo,
       ui.tooltipshow(i_app)
 
     ;11. hotstring
@@ -1076,7 +1105,7 @@ class zclprd{
 
     ;ESFU tiene varias variantes
     If i_patron contains ESFU,
-      i_patron := i_patron "EEFF,"
+      i_patron := i_patron "EEFF,EF"
 
     ;01. get
     l_folder := ui.varmemoryget(i_folder,i_debug)
@@ -1115,7 +1144,7 @@ class zclprd{
     If Winactive("ahk_exe OUTLOOK.EXE")
     {
       Send !{2}
-      ClipWait
+      Sleep 2000
     }
     this.run_ost_file(Clipboard)
   }
@@ -1123,12 +1152,13 @@ class zclprd{
   ;Ost desde archivo
   run_ost_file(i_ticket=""){
     ;Clipboard
-    If i_ticket=<>
+    If i_ticket<>
       l_name := clipboard := i_ticket
     Else
       l_name := clipboard := G_filename
     
     ;Registro
+    this.run("zomt_excel")
     l_title := this.run("zomt_excel",True)
     SetKeyDelay 30,10 ;Para controlsend
     If l_title<>
@@ -1144,7 +1174,7 @@ class zclprd{
     }
     l_mindif := l_mindif - A_min
     l_horadif := l_horadif - A_hour
-    l_message := l_horadif ":" l_mindif " minutos Diferencia `n" l_hora ":" l_min " " l_name
+    l_message := l_horadif ":" l_mindif " Diff `n" l_hora ":" l_min " " l_name
     ui.tooltipshow(l_message)
 
     ;Esperar por el mensaje
@@ -1161,8 +1191,8 @@ class zclprd{
 
     ;01. Prepara contenido
     Clipboard =
-    Send ^{c}
-    Sleep 100
+    ; Send ^{c}
+    ; Sleep 100
     ; If clipboard=
     ; {
     ;   Send {home}+{end}^{c}
@@ -1170,7 +1200,7 @@ class zclprd{
     ; }
     If clipboard=
     {
-      Send ^!s
+      Send ^!s                              ;directo
       WinWaitActive ahk_exe Snipaste.exe,,5
       If errorlevel<>0
         Exit
@@ -1179,7 +1209,7 @@ class zclprd{
     }
     If clipboard= AND snipaste=
     {
-      ui.tooltipshow("Clipboard vacio")
+      ui.tooltipshow("Clipboard vacio no se puede documentar")
       Exit
     }
 
@@ -1224,7 +1254,8 @@ class zclprd{
         ControlSend _WwG1, {enter}, %l_title%
 
         ;02.11 Mensaje
-        ui.tooltipshow("Documento actualizado en fondo")
+        l_message := "(" l_title ") Documentado en fondo..."
+        ui.tooltipshow(l_message)
       }
       ;02.2 Activando
       Else{
@@ -1239,7 +1270,6 @@ class zclprd{
     If ui.ishs()
       Exit
   }
-
 }
 
 ;**********************************************************************
@@ -1247,31 +1277,33 @@ class zclprd{
 ;**********************************************************************
 class zclsap{
   ;Send key for sap gui
-  sap_send(i_key){
+  sap_send(i_key=""){
     ui.wina()
 
     ;Verificar si es eclipse
-    If this.iseclipse_nosap()
-    {
-      If A_ThisHotkey =!left
-        Send !{left}
-      Else if A_ThisHotkey =!Right
-        Send !{right}
-      Else
-        Send {%A_ThisHotkey%}
+    If i_key contains :*,
       Exit
+    Else If this.iseclipse_nosap()
+    {
+      i_key := StrReplace(A_ThisHotkey, "$", "")
+      i_key := StrReplace(A_ThisHotkey, "~", "")
+      If i_key =!Left
+        Send !{left}
+      Else if i_key =!Right
+        Send !{right}
+      Else if i_key =Enter
+        Send {enter}
+      Else
+        Send %i_key%
     }
-
-    Send %i_key%
+    Else
+      Send %i_key%
+    Exit
   }
 
   ;Activar abap
   abap_activate(i_all=""){
     ui.wina()
-
-    ;Verificar si es eclipse
-    If this.iseclipse_nosap()
-      Exit
 
     this.abap_sync()
 
@@ -1292,7 +1324,7 @@ class zclsap{
     Else
     {
       Send ^{f3}
-      WinWaitactive Objetos inactivos de,,3 ;Inactivos
+      WinWaitactive Objetos inactivos de,,5 ;Inactivos
       If errorlevel = 0
       {
         If i_all<>
@@ -1300,7 +1332,7 @@ class zclsap{
         Sleep 300
         Send {enter}
       }
-      WinWaitactive ctiva,,3 ;Error al activar
+      WinWaitactive ctiva,,5 ;Error al activar
       If errorlevel = 0
         Send {enter}
       If ui.ishs()
@@ -1365,32 +1397,38 @@ class zclsap{
 
   ;Sincronizar
   abap_sync(){
-    l_file:=
-
     ui.winA()
+
+    l_file := "D:\NT\Cloud\OneDrive\Ap\Src\"
+    l_message :=
 
     ;01. Determinar
     If G_title contains YMT,
     {
       l_message = YMT se sincronizo
-      l_file = D:\NT\Cloud\OneDrive\Ap\Src\ymt.txt
+      l_file := l_file "ymt.txt"
     }
     If G_title contains YMR,
     {
       l_message = YMR se sincronizo
-      l_file = D:\NT\Cloud\OneDrive\Ap\Src\Ym_old\ymr_omnia.txt
+      l_file := l_file "ymr.prog.txt"
     }
     If G_title contains YMM,
     {
       l_message = YMM se sincronizo
-      l_file = D:\NT\Cloud\OneDrive\Ap\Src\ymm.txt
+      l_file := l_file "ymm.txt"
     }
-    If l_file<>
+    If G_title contains ZCL_UTIL,
+    {
+      l_message = ZCL_UTIL se sincronizo
+      l_file := l_file "zcl_util.txt"
+    }
+    If l_message<>
     {
       ;01.1 Copiar
       Send ^a^c
       Sleep 1000
-      Send ^{f3}
+      ;Send ^{f3}
 
       ;01.2 Guardar
       FileDelete %l_file%
@@ -1571,16 +1609,16 @@ class zclsap{
     ;04. Open VPN
     If (l_vpn_active = "1" and l_vpn_sw = "forticlient")
     {
-      If ( ui.inisapget("vpn") <> l_empresaid Or !WinExist("FortiClient SSLVPN") )
+      If ( ui.iniymget("vpn") <> l_empresaid Or !WinExist("FortiClient SSLVPN") )
       {
-        ui.inisapset(l_empresaid,"vpn")
+        ui.iniymset(l_empresaid,"vpn")
         Run D:\NT\Cloud\OneDrive\Ap\Apps\Ahk\App_saplogon\Vpn\%l_empresaid%0.ahk
         ui.sleep(14)
       }
     }
 
     ;Open sap
-    l_sap := WinExist("ahk_class SAP_FRONTEND_SESSION")
+    l_sap := ui.WinExist("ahk_class SAP_FRONTEND_SESSION")
 
     ;05. Open SapLogon
     If l_conexionname<>
@@ -1604,7 +1642,10 @@ class zclsap{
 
     ;Ajustar ventana
     If l_sap=
+    {
+      WinWaitActive ahk_class SAP_FRONTEND_SESSION
       go.run("A_groupy")
+    }
 
     ;ymt version
     If l_tcode = ymt
@@ -1737,11 +1778,7 @@ class zclsap{
 
     ;02 Verifica eclipse
     If this.iseclipse_nosap()
-    {
-      If i_tcode=enter
-        Send {enter}
-      Exit
-    }
+      this.sap_send()
 
     ;02. Para atajos de teclado y archivos
     If i_tcode not in enter,complete
@@ -1805,8 +1842,10 @@ class zclsap{
       msgbox %A_ThisFunc%: %l_control%-%i_tcode%-%l_tcode%
 
     If i_noexit=
+    {
       If ui.ishs()
-      Exit
+        Exit
+    }
   }
 
   ;Tcode with view
@@ -1882,7 +1921,7 @@ class zclsap{
       ui.sleep(1)
       lt_char := strsplit(G_title,"-")
       l_sap := lt_char[2]
-      l_util := lt_char[3] + 1
+      ;l_util := lt_char[3] + 1
 
       ;01.1 YMT - Get file and compare
       l_file := "D:\NT\Cloud\OneDrive\Ap\Src\ymt.txt"
@@ -1894,24 +1933,24 @@ class zclsap{
         ;Update ymt
         this.se38("YMT","f6")
         ui.pasteall(lt_code,True)
-        go.everything_setcount(l_file)
+        ;go.everything_setcount(l_file)
       }
 
-      ;01.2 UTIL - Get file and compare
-      If l_util <> 1
-      {
-        l_file := "D:\ym\ZCL_UTIL.txt"
-        FileRead lt_code, %l_file%
-        Loop Parse, lt_code, `n, `r
-          l_file_version := A_Index
-        If l_util <> %l_file_version%
-        {
-          ;Update zcl_util
-          this.se24("ZCL_UTIL","f6",True)
-          ui.pasteall(lt_code,True)
-          go.everything_setcount(l_file)
-        }
-      }
+      ; ;01.2 UTIL - Get file and compare
+      ; If l_util <> 1
+      ; {
+      ;   l_file := "D:\ym\ZCL_UTIL.txt"
+      ;   FileRead lt_code, %l_file%
+      ;   Loop Parse, lt_code, `n, `r
+      ;     l_file_version := A_Index
+      ;   If l_util <> %l_file_version%
+      ;   {
+      ;     ;Update zcl_util
+      ;     this.se24("ZCL_UTIL","f6",True)
+      ;     ui.pasteall(lt_code,True)
+      ;     go.everything_setcount(l_file)
+      ;   }
+      ; }
     }
   }
 }
@@ -1946,24 +1985,44 @@ class zcljob{
 ;**********************************************************************
 class zclqas extends zclprd{
   ;Guardar todo clipboard de ticket
-  clipboard_savelog(){
+  clipboard_savelog(i_debug=""){
 
     If DllCall("IsClipboardFormatAvailable", "Uint", 1) ;cf_text=1, cf_oemtext=7, cf_unicodetext=13
     {
-      ;l_mem := DllCall("GetClipboardData", "Uint", 13)
-      ;l_len := DllCall("GlobalSize", "Ptr", l_mem)
+      Sleep 1000
       l_len := StrLen(Clipboard)
       If i_debug<>
         Msgbox %l_len%
-      If l_len < 20
+      If ( l_len < 41 and l_len > 3 )
       {
-        l_ticket := ui.varmemoryget("zomt_empresa")
-        l_ticket = D:/NT/Autocapture/%l_ticket%.txt
-        ;FileAppend %Clipboard% `n, %l_ticket%
-        ;txt := FileOpen(l_ticket, "w")
-        ;txt.read(0)
-        ;txt.write(Clipboard)
-        ;txt.close()
+        l_data := Clipboard
+        l_ticket := ui.varmemoryget("zomt_desc2")
+        l_ticket = D:\NT\Local\Autocapture\%l_ticket%.txt
+
+        ;Primera escritura
+        If !FileExist(l_ticket)
+          FileAppend %l_data%,%l_ticket%,UTF-8
+        Else
+        {
+          ;Lee fichero para verificar si existe y no duplicar
+          FileRead txt, %l_ticket%
+          l_exist :=
+          Loop parse, txt, `n,`r
+          {
+            IF A_LoopField = %l_data%
+            {
+              l_exist := True
+              break
+            }
+          }
+
+          If l_exist=
+            FileAppend %l_data%`n, %l_ticket%
+          ;txt := FileOpen(l_ticket, "w")
+          ;txt.read(0)
+          ;txt.write(Clipboard)
+          ;txt.close()
+        }
       }
     }
   }

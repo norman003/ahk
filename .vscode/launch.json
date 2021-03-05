@@ -11,6 +11,14 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal"
+    },
+    {
+      "name": "AutoHotkey Debug",
+      "type": "autohotkey",
+      "request": "launch",
+      "runtime": "AutoHotkey",
+      "program": "${file}",
+      "console": "integratedTerminal"
     }
   ]
 }

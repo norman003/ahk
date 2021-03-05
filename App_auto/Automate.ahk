@@ -9,12 +9,37 @@ GroupAdd gr_sap_debug, debugger
 GroupAdd gr_sap, ahk_class SAP_FRONTEND_SESSION
 GroupAdd gr_sap, ahk_class SWT_Window0
 go.snipasteauto_ticket()
-^!a::Reload
-#v::go.sound_toogle()
-#ESC::go.run("zomt_logon0")
+:*:;;::
+ui.sendcopy("ñ","","backspace")
+::"I::
+::"E::
+::"U::
+go.sap.abap_commentline(A_thislabel,"NTP",zomt_ticket)
+::*I::
+::*E::
+::*U::
+go.sap.abap_commentblock(A_thislabel,"NTP",zomt_ticket)
+:*:nn::
+ui.sendcopy("zomt_ticket")
+:*:n1::
+ui.sendcopy("zomt_desc2")
+:*:n2::
+ui.sendcopy("zomt_desc3")
+:*:n3::
+ui.sendcopy("zomt_desc4")
+:*:d1::
+ui.sendcopy("G_day_en")
+:*:d2::
+ui.sendcopy("G_day")
+:*:d3::
+ui.sendcopy("G_day2_en")
+:*:d4::
+ui.sendcopy("G_day2")
 #F1::go.sap.logon("zomt_logon1")
 #F2::go.sap.logon("zomt_logon2")
 #F3::go.sap.logon("zomt_logon3")
+^!a::Reload
+#v::go.sound_toogle()
 #IfWinActive Automate_
 ~^s::reload
 #IfWinActive ahk_exe Outlook.exe
@@ -59,7 +84,8 @@ Send *
 return
 ^+tab::Send ^{pgup}
 ^tab::Send ^{pgdn}
-$^F3::go.sap.abap_sync()
+~^F3::go.sap.abap_sync()
+^b::go.sap.abap_activate()
 #IfWinActive ahk_class EVERYTHING
 F1::go.run("A_everything_code")
 #IfWinActive ahk_group gr_launcher
@@ -174,51 +200,32 @@ go.run("A_zosss004")
 :*b0:os5::
 go.run("A_zosss005")
 #IfWinActive ahk_group gr_launcher_app
+:*b0:1::
+go.run("A_saplogon")
+:*b0:2::
+go.run("A_excel")
+:*b0:3::
+go.run("A_word")
+:*b0:4::
+go.run("A_vscode")
+:*b0:5::
+go.run("A_chrome")
+:*b0:6::
+go.run("A_eclipse")
+:*b0:7::
+go.run("A_notepad2")
+:*b0:8::
+go.run("A_notepad")
+:*b0:9::
+go.run("A_teams")
+:*b0:0::
+go.run("A_outlook")
 :*b0:ost::
 go.run("zomt_excel")
-:*b0:ymt::
-go.run("D:\NT\Cloud\OneDrive\Ap\Snippet\Abap\Ym\ymt.txt")
-:*b0:ymr::
-go.run("D:\NT\Cloud\OneDrive\Ap\Snippet\Abap\Ym\ymr.txt")
-:*b0:mu::
+:*b0:mus::
 go.run("Nf_music")
-:*b0:au::
+:*b0:aut::
 go.run("Ne_auto")
-:*b0:ai::
-go.run("A_aimp")
-:*b0:ch::
-go.run("A_chrome")
-:*b0:cm::
-go.run("A_cmd")
-:*b0:ed::
-go.run("A_edge")
-:*b0:ex::
-go.run("A_excel")
-:*b0:fo::
-go.run("A_explorer")
-:*b0:fi::
-go.run("A_firefox")
-:*b0:n1::
-go.run("A_notepad")
-:*b0:n2::
-go.run("A_notepad2")
-:*b0:no::
-go.run("A_notion")
-:*b0:sp::
-go.run("A_spy")
-:*b0:ta::
-go.run("A_taskmanager")
-:*b0:te::
-go.run("A_teams")
-:*b0:vi::
-go.run("A_visualtime")
-:*b0:vs::
-go.run("A_vscode")
-#IfWinActive ahk_exe switcheroo.exe
-PgDn::Send {Down 5}
-PgUp::Send {Up 5}
-Lbutton::Click 2
-Del::Send ^w
 #IfWinActive Snipper - Snipaste
 F12::
 Send {enter}
@@ -233,6 +240,7 @@ return
 !q::go.sap.qasopen_var()
 !`::go.sap.qasopen_val()
 #IfWinActive ahk_group gr_sap
+$;::go.sap.sap_send("_")
 +F4::go.sap.sap_send("{F4}")
 !left::go.sap.sap_send("+{F6}")
 !right::go.sap.sap_send("+{F7}")
@@ -244,25 +252,25 @@ return
 $enter::go.sap.tcode("enter")
 !w::go.sap.tcode("/nex")
 !h::go.sap.tcode("/h")
-!t::go.sap.tcode("ymt")
-!r::go.sap.tcodebutton("ymt","=btn3a")
-!1::go.sap.tcode("se11")
-!3::go.sap.tcode("se93")
-!4::go.sap.tcode("se24")
-!6::go.sap.tcode("se16n")
-!7::go.sap.tcode("se37")
-!8::go.sap.tcode("se38")
-!9::go.sap.tcode("se09")
-!0::go.sap.tcode("se80")
-^1::go.sap.tcode("+se11")
-^3::go.sap.tcode("+se93")
-^4::go.sap.tcode("+se24")
-^6::go.sap.tcode("+se16n")
-^7::go.sap.tcode("+se37")
-^8::go.sap.tcode("+se38")
-^0::go.sap.tcode("+se80")
-^t::go.sap.tcode("+ymt")
-^r::go.sap.tcodebutton("+ymt","=btn3a")
+$^1::go.sap.tcode("se11")
+$^3::go.sap.tcode("se93")
+$^4::go.sap.tcode("se24")
+$^6::go.sap.tcode("se16n")
+$^7::go.sap.tcode("se37")
+$^8::go.sap.tcode("se38")
+$^9::go.sap.tcode("se09")
+$^0::go.sap.tcode("se80")
+$^+1::go.sap.tcode("+se11")
+$^+3::go.sap.tcode("+se93")
+$^+4::go.sap.tcode("+se24")
+$^+6::go.sap.tcode("+se16n")
+$^+7::go.sap.tcode("+se37")
+$^+8::go.sap.tcode("+se38")
+$^+0::go.sap.tcode("+se80")
+^t::go.sap.tcode("ymt")
+^r::go.sap.tcodebutton("ymt","=btn3a")
+$^+t::go.sap.tcode("+ymt")
+$^+r::go.sap.tcodebutton("+ymt","=btn3a")
 :*b0:qas::
 go.sap.qasopen()
 :*b0:ymt::
