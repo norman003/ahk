@@ -1,0 +1,10 @@
+Willy,
+Buen día,
+ 
+Tu verificación de la siguiente estimación:
+  1. Tiempos
+       a. Relevamiento 0.50
+       b. Desarrollo 
+       c. Pruebas 
+       d. Docu 
+  2. Apuntes CT

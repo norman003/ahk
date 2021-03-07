@@ -40,13 +40,15 @@ ui.sendcopy("G_day2")
 #F3::go.sap.logon("zomt_logon3")
 ^!a::Reload
 #v::go.sound_toogle()
+#!v::go.sound_toogle("100")
 #IfWinActive Automate_
 ~^s::reload
 #IfWinActive ahk_exe Outlook.exe
 F4::go.run_ost("zomt_excel")
-^t::go.outlook_osss("http://osss.omniasolution.com:8093/Actividad/GestionarActividades?fec=")
+^h::go.outlook_osss("http://osss.omniasolution.com:8093/Actividad/GestionarActividades?fec=")
 ^p::go.outlook_osss("http://osss.omniasolution.com:8093/Planificacion/GestionarPlanificacion")
-^n::go.outlook_osss("https://osss.omniasolution.com:8090/en/#/inicio/consulta-ticket")
+^n::go.outlook_osss("https://osss.omniasolution.com:8090/en/#/inicio/ticket/")
+^t::go.outlook_osss("http://osss.omniasolution.com:8093/Ticket/GestionarTicketAdmin?tick=")
 ^o::go.outlook_osss("http://osss.omniasolution.com")
 !w::Send ^+1
 #IfWinActive OST -
@@ -55,9 +57,9 @@ F4::go.run_ost("zomt_excel")
 ^left::Send ^{pgup}
 ^right::Send ^{pgdn}
 #IfWinActive ahk_exe Winword.exe
-!7::go.word_resize("75")
-!8::go.word_resize("80")
-!9::go.word_resize("90")
+^7::go.word_resize("75")
+^8::go.word_resize("80")
+^9::go.word_resize("90")
 F3::Send ^f
 ~^v::go.word_resize_paste()
 #IfWinActive ahk_exe wps.exe
@@ -227,13 +229,16 @@ go.run("Nf_music")
 :*b0:aut::
 go.run("Ne_auto")
 #IfWinActive Snipper - Snipaste
-F12::
+^enter::
 Send {enter}
 Sleep 100
 Send !{esc}
+Winactivate A
 return
 #IfWinActive ahk_class #32770
 ~enter::go.32770_enter()
+#IfWinActive ahk_class TrueLaunchBarMenuShadow
+~space::Send {enter}
 #IfWinActive /000 SAP
 !q::go.sap.qas_transport()
 #IfWinActive ahk_group gr_sap_debug
@@ -241,36 +246,25 @@ return
 !`::go.sap.qasopen_val()
 #IfWinActive ahk_group gr_sap
 $;::go.sap.sap_send("_")
-+F4::go.sap.sap_send("{F4}")
 !left::go.sap.sap_send("+{F6}")
 !right::go.sap.sap_send("+{F7}")
 !n::go.sap.sap_send("^{/}")
 ^n::go.sap.sap_send("^{/}/o")
 ^+k::go.sap.sap_send("^+l")
-^b::go.sap.abap_activate("all")
-!b::go.sap.abap_activate()
 $enter::go.sap.tcode("enter")
 !w::go.sap.tcode("/nex")
 !h::go.sap.tcode("/h")
-$^1::go.sap.tcode("se11")
-$^3::go.sap.tcode("se93")
-$^4::go.sap.tcode("se24")
-$^6::go.sap.tcode("se16n")
-$^7::go.sap.tcode("se37")
-$^8::go.sap.tcode("se38")
-$^9::go.sap.tcode("se09")
-$^0::go.sap.tcode("se80")
-$^+1::go.sap.tcode("+se11")
-$^+3::go.sap.tcode("+se93")
-$^+4::go.sap.tcode("+se24")
-$^+6::go.sap.tcode("+se16n")
-$^+7::go.sap.tcode("+se37")
-$^+8::go.sap.tcode("+se38")
-$^+0::go.sap.tcode("+se80")
-^t::go.sap.tcode("ymt")
-^r::go.sap.tcodebutton("ymt","=btn3a")
-$^+t::go.sap.tcode("+ymt")
-$^+r::go.sap.tcodebutton("+ymt","=btn3a")
+!b::go.sap.abap_activate()
+^b::go.sap.abap_activate("all")
+$^1::go.sap.tcode("+se11")
+$^3::go.sap.tcode("+se93")
+$^4::go.sap.tcode("+se24")
+$^6::go.sap.tcode("+se16n")
+$^7::go.sap.tcode("+se37")
+$^8::go.sap.tcode("+se38")
+$^0::go.sap.tcode("+se80")
+$^t::go.sap.tcode("+ymt")
+$^r::go.sap.tcodebutton("+ymt","=btn3a")
 :*b0:qas::
 go.sap.qasopen()
 :*b0:ymt::

@@ -9,25 +9,19 @@ GroupAdd gr_sap_debug, debugger
 GroupAdd gr_sap, ahk_class SAP_FRONTEND_SESSION
 GroupAdd gr_sap, ahk_class SWT_Window0
 go.snipasteauto_ticket()
-`::go.app_close()
-$ESC::go.app_altesc()
+`::Send !{tab}
+$ESC::go.app_close()
 $F1::go.run("A_everything")
 $F2::go.run("A_ctrltab")
-$!F1::go.run("A_switcheroo")
-$!F2::go.run("A_switcheroo")
-$!F3::go.run("A_switcheroo")
+$!F1::go.app_next("gt_app")
+$!F2::go.app_next("gt_ms")
+$!F3::go.app_next("gt_code")
 $+F2::Send {F2}
 $+F3::Send {F3}
+$+F4::Send {F4}
 $^!F1::Send {F1}
 $!`::go.run("A_groupy")
-$!1::go.run("A_word")
-$!2::go.run("A_excel")
-$!3::go.run("A_outlook")
-$!4::go.run("A_saplogon")
-$!5::go.run("A_vscode")
-$!6::go.run("A_chrome")
-NumLock::go.run("A_diito")
-NumpadDiv::go.run("A_copyq")
+NumpadDiv::go.run("A_diito")
 NumpadMult::go.run("A_snipaste")
 NumpadSub::go.run("A_notepad2")
 NumpadAdd::go.run("A_chrome")
@@ -43,10 +37,9 @@ Numpad3::go.run("")
 Numpad0::go.run("")
 NumpadDot::go.run("D:\NT\Cloud\OneDrive\PARA\Know\zcl_util.docx")
 ^!a::Reload
-$^w::go.app_close()
 $+ESC::go.run("A_esc")
 ^`::go.run_docu()
-+`::go.run_docu("",True)
+^+`::go.run_docu("",True)
 ~^c::go.clipboard_savelog()
 ~Lbutton::go.click()
 XButton1::ui.keysend("{Printscreen}")
@@ -75,7 +68,5 @@ send ^{f}
 return
 F4::Send ^p
 #IfWinActive ahk_exe switcheroo.exe
-F2::go.run("A_everything")
-F3::go.run("A_everything")
 Lbutton::Click 2
 Del::Send ^w
